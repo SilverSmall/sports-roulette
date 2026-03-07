@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Тренувальна-рулетка PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="image_bc9759.png" type="image/png">
+</head>
+<body>
+<header>
+    <h1 id="main-title">Тренувальна-рулетка</h1>
+    <div class="hamburger" id="hamburger">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+    <nav id="main-nav">
+        <ul>
+            <li><a href="#exercises-section" data-lang="ex_list">Список вправ</a></li>
+            <li><a href="#history-section" data-lang="history">Історія</a></li>
+            <li><a href="#skins-management-section" data-lang="skins_management">Керування скінами</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="main-content">
+    <div class="settings-and-controls">
+        <div id="controls">
+            <label>
+                <span data-lang="level_label">Рівень:</span>
+                <select id="level">
+                    <option value="easy" data-lang="easy">Легкий</option>
+                    <option value="medium" data-lang="medium">Середній</option>
+                    <option value="hard" data-lang="hard">Важкий</option>
+                </select>
+            </label>
+            <label>
+                <span data-lang="category_label">Категорія:</span>
+                <select id="category">
+                    <option value="all" data-lang="all_exercises">Всі</option>
+                    <option value="legs" data-lang="category_legs">Ноги</option>
+                    <option value="arms_chest" data-lang="category_arms_chest">Руки/Груди</option>
+                    <option value="core" data-lang="category_core">Корпус</option>
+                    <option value="cardio" data-lang="category_cardio">Кардіо</option>
+                </select>
+            </label>
+        </div>
+        <div id="settings">
+            <label>
+                <span data-lang="lang_label">Мова:</span>
+                <select id="lang-select">
+                    <option value="uk">Українська</option>
+                    <option value="en">English</option>
+                </select>
+            </label>
+            <label>
+                <span data-lang="theme_label">Тема:</span>
+                <select id="theme-select">
+                    <option value="light" data-lang="light">Світла</option>
+                    <option value="dark" data-lang="dark">Темна</option>
+                </select>
+            </label>
+            <!-- SKIN SETTINGS MOVED TO skins-management-section -->
+        </div>
+    </div>
+
+    <div class="wheel-container">
+        <canvas id="wheel"></canvas>
+        <div class="pointer"></div>
+        <div id="custom-skin-container">
+            <img id="custom-skin-image" src="" alt="Custom Skin" style="display: none;">
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button id="spin-btn" class="main-btn" data-lang="spin_btn">Крутити!</button>
+    </div>
+
+    <div id="result">
+        <p><span id="result-text" data-lang="press_spin">Натисни "Крутити!"</span></p>
+        <p><span id="reps-text"></span></p>
+    </div>
+</div>
+
+<section id="exercises-section">
+    <h2 data-lang="ex_list">Список вправ</h2>
+    <p class="section-description" data-lang="ex_description">Ви можете додавати або видаляти вправи.</p>
+    <ul id="exercises-list"></ul>
+    <div class="add-exercise-form">
+        <input type="text" id="new-ex-input" placeholder="Назва вправи" data-lang-placeholder="new_ex_placeholder">
+        <select id="new-ex-category">
+            <option value="legs" data-lang="category_legs">Ноги</option>
+            <option value="arms_chest" data-lang="category_arms_chest">Руки/Груди</option>
+            <option value="core" data-lang="category_core">Корпус</option>
+            <option value="cardio" data-lang="category_cardio">Кардіо</option>
+        </select>
+        <button id="addExBtn" class="main-btn" data-lang="add_ex">Додати</button>
+    </div>
+    <div class="list-management-btns">
+        <button id="resetExBtn" class="secondary-btn" data-lang="reset_ex">Скинути до стандартних</button>
+    </div>
+    <button class="back-to-wheel-btn" data-lang="back_to_wheel">Назад до колеса</button>
+</section>
+
+<section id="history-section">
+    <h2 data-lang="history">Історія</h2>
+    <ul id="history"></ul>
+    <button id="clearHistoryBtn" class="danger-btn" data-lang="clear_history">Очистити історію</button>
+    <button class="back-to-wheel-btn" data-lang="back_to_wheel">Назад до колеса</button>
+</section>
+
+<!-- NEW SECTION: Skins Management -->
+<section id="skins-management-section">
+    <h2 data-lang="skins_management">Керування скінами</h2>
+    <p class="section-description" data-lang="skins_management_description">Тут ви можете керувати збереженими скінами для рулетки.</p>
+    <!-- MOVED SKIN SETTINGS HERE -->
+    <div id="skin-settings">
+        <span data-lang="skin_label">Скін рулетки:</span>
+        <input type="file" id="skin-input" accept="image/*" style="display: none;">
+        <button id="skin-upload-btn" class="secondary-btn" data-lang="upload_image">Завантажити фото/GIF</button>
+        <input type="url" id="skin-url-input" placeholder="Або вставте посилання на GIF/фото" data-lang-placeholder="paste_url_placeholder">
+        <button id="skin-apply-url-btn" class="secondary-btn" data-lang="apply_url">Застосувати URL</button>
+        <button id="skin-clear-btn" class="danger-btn" data-lang="clear_skin">Очистити</button>
+    </div>
+    <div id="saved-skins-container">
+        <h3 data-lang="saved_skins_title">Збережені скіни:</h3>
+        <ul id="saved-skins-list" class="saved-skins-list">
+            <!-- Saved skins will be rendered here by JavaScript -->
+        </ul>
+    </div>
+    <button class="back-to-wheel-btn" data-lang="back_to_wheel">Назад до колеса</button>
+</section>
+
+<div id="fullscreen-timer" style="display: none;">
+    <div class="timer-content">
+        <p id="fullscreen-timer-motivation"></p>
+        <h3 id="fullscreen-timer-exercise"></h3>
+        <div id="fullscreen-timer-display-container">
+            <span id="fullscreen-timer-display"></span>
+        </div>
+        <button id="timer-start-btn" class="main-btn" data-lang="timer_start">Старт таймер</button>
+        <button id="timer-done-btn" class="main-btn" data-lang="timer_done" style="display: none;">Готово!</button>
+    </div>
+</div>
+
+<div id="custom-confirm" class="hidden">
+    <div class="custom-confirm-box">
+        <p id="custom-confirm-text"></p>
+        <div class="custom-confirm-buttons">
+            <button id="custom-confirm-yes" class="main-btn" data-lang="confirm_yes">Так</button>
+            <button id="custom-confirm-no" class="secondary-btn" data-lang="confirm_no">Ні</button>
+        </div>
+    </div>
+</div>
+
+<script src="wheel.js"></script>
+</body>
+</html>

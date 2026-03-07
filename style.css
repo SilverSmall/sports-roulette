@@ -1,0 +1,562 @@
+/* CSS Variables for theming */
+:root {
+    --bg-color: #f0f0f0;
+    --main-bg-color: #fff;
+    --text-color: #222;
+    --text-color-light: #555;
+    --header-bg: #fff;
+    --header-shadow: rgba(0,0,0,0.1);
+    --button-bg: #ffd700;
+    --button-hover-bg: #ffe76b;
+    --button-shadow: rgba(0,0,0,0.1);
+    --button-active-shadow: rgba(0,0,0,0.1);
+    --section-bg: #fff;
+    --section-shadow: rgba(0,0,0,0.1);
+    --input-border: #bbb;
+    --wheel-text-color: #222;
+    --pointer-color: #eb3b3b;
+    --link-color: #333;
+    --link-hover-bg: #f0f0f0;
+    --section-btn-bg: #f0f0f0;
+    --section-btn-border: #ccc;
+    --fullscreen-timer-bg: rgba(0, 0, 0, 0.95);
+    /* NEW COLORS for wheel sectors */
+    --wheel-sector-1: #ff6347; /* Tomato */
+    --wheel-sector-2: #4682b4; /* SteelBlue */
+    --wheel-sector-3: #32cd32; /* LimeGreen */
+    --wheel-sector-4: #ffa500; /* Orange */
+    --wheel-sector-5: #9370db; /* MediumPurple */
+}
+
+/* Dark theme variables */
+body.dark-theme {
+    --bg-color: #1a1a1a;
+    --main-bg-color: #2c2c2c;
+    --text-color: #f0f0f0;
+    --text-color-light: #bbb;
+    --header-bg: #2c2c2c;
+    --header-shadow: rgba(0,0,0,0.5);
+    --button-bg: #ffd700;
+    --button-hover-bg: #ffe76b;
+    --button-shadow: rgba(0,0,0,0.3);
+    --button-active-shadow: rgba(0,0,0,0.5);
+    --section-bg: #2c2c2c;
+    --section-shadow: rgba(0,0,0,0.5);
+    --input-border: #666;
+    --wheel-text-color: #f0f0f0;
+    --pointer-color: #ff6347;
+    --link-color: #f0f0f0;
+    --link-hover-bg: #3c3c3c;
+    --section-btn-bg: #3c3c3c;
+    --section-btn-border: #555;
+    --fullscreen-timer-bg: rgba(0, 0, 0, 0.95);
+    /* NEW COLORS for dark theme */
+    --wheel-sector-1: #ff8c69;
+    --wheel-sector-2: #87cefa;
+    --wheel-sector-3: #7fffd4;
+    --wheel-sector-4: #f4a460;
+    --wheel-sector-5: #e6e6fa;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: 60px; /* Space for fixed header */
+}
+/* Header */
+header {
+    background-color: var(--header-bg);
+    color: var(--text-color);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px var(--header-shadow);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transition: background-color 0.3s;
+}
+#main-title {
+    margin: 0;
+    font-size: 1.5em;
+}
+.hamburger {
+    display: none;
+    cursor: pointer;
+}
+.hamburger .bar {
+    width: 25px;
+    height: 3px;
+    background-color: var(--text-color);
+    margin: 5px 0;
+    transition: 0.4s;
+}
+#main-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 20px;
+}
+#main-nav ul li a {
+    text-decoration: none;
+    color: var(--link-color);
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
+}
+#main-nav ul li a:hover {
+    background-color: var(--link-hover-bg);
+}
+/* Main Content */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 20px;
+    text-align: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.settings-and-controls {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin-top: 15px;
+}
+#controls, #settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+}
+#controls label, #settings label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+#controls select, #settings select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--input-border);
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+}
+/* NEW STYLES: Custom skin settings */
+#skin-settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+/* Wheel container */
+.wheel-container {
+    position: relative;
+    width: 350px;
+    height: 350px;
+    margin: 0 auto;
+    display: block;
+    box-shadow: 0 10px 20px var(--section-shadow);
+    border-radius: 50%;
+    background-color: var(--main-bg-color);
+}
+canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* NEW: Додайте фоновий колір для налагодження */
+    background-color: #f0f0f0; /* Світло-сірий для видимості */
+}
+body.dark-theme .wheel-container canvas {
+    background-color: #333; /* Темно-сірий для темної теми */
+}
+.pointer {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid var(--pointer-color);
+    z-index: 10;
+}
+/* NEW STYLES: Custom skin container */
+#custom-skin-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50%; /* Adjust size as needed */
+    height: 50%;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none; /* Allows clicks to go through to the wheel */
+}
+#custom-skin-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+/* Buttons and Results */
+.action-buttons {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+.main-btn, .secondary-btn, .danger-btn {
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    white-space: nowrap;
+}
+.main-btn {
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    box-shadow: 0 4px 6px var(--button-shadow);
+}
+.main-btn:hover {
+    background-color: var(--button-hover-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px var(--button-shadow);
+}
+.main-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px var(--button-active-shadow);
+}
+.secondary-btn {
+    background-color: var(--section-btn-bg);
+    color: var(--text-color);
+    border: 1px solid var(--section-btn-border);
+}
+.secondary-btn:hover {
+    background-color: var(--link-hover-bg);
+}
+.danger-btn {
+    background-color: #d9534f;
+    color: white;
+}
+.danger-btn:hover {
+    background-color: #c9302c;
+}
+#result {
+    font-size: 1.5em;
+    margin-top: 20px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+#result-text {
+    display: block;
+}
+#reps-text {
+    font-size: 0.8em;
+    font-weight: normal;
+    color: var(--text-color-light);
+}
+/* Sections */
+section {
+    display: none; /* Initially hidden */
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: var(--section-bg);
+    border-radius: 10px;
+    box-shadow: 0 10px 20px var(--section-shadow);
+}
+section h2 {
+    margin-top: 0;
+    font-size: 2em;
+}
+.section-description {
+    font-size: 0.9em;
+    color: var(--text-color-light);
+    margin-bottom: 20px;
+    text-align: center;
+}
+#exercises-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+#exercises-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--input-border);
+    font-size: 1.1em;
+}
+#exercises-list li:last-child { border-bottom: none; }
+.remove-btn {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.remove-btn:hover {
+    background-color: #c9302c;
+}
+.add-exercise-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.add-exercise-form input, .add-exercise-form select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid var(--input-border);
+    flex-grow: 1;
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
+}
+.add-exercise-form button {
+    flex-grow: 0;
+}
+.list-management-btns {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+#history li {
+    font-style: italic;
+    color: var(--text-color-light);
+}
+.back-to-wheel-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+}
+/* Fullscreen Timer */
+#fullscreen-timer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--fullscreen-timer-bg);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 2000;
+}
+.timer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+#fullscreen-timer-motivation {
+    font-size: 1.2em;
+    font-style: italic;
+    color: #f0f0f0;
+}
+#fullscreen-timer-exercise {
+    font-size: 2em;
+    margin: 0;
+}
+#fullscreen-timer-display-container {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 5px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#fullscreen-timer-display {
+    font-size: 4em;
+    font-weight: bold;
+}
+#timer-start-btn, #timer-done-btn {
+    margin-top: 20px;
+    padding: 15px 30px;
+}
+/* Custom Confirm */
+#custom-confirm {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+.custom-confirm-box {
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 400px;
+}
+#custom-confirm-text {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+.custom-confirm-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+.hidden {
+    display: none !important;
+}
+/* NEW STYLES: Saved Skins List */
+.saved-skins-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.saved-skins-list li {
+    background-color: var(--main-bg-color);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 120px; /* Fixed width for each item */
+    box-shadow: 0 2px 5px var(--section-shadow);
+}
+
+.saved-skins-list li img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 4px;
+    object-fit: contain; /* Ensure image fits without cropping */
+}
+
+.saved-skins-list li .skin-actions {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+/* Media Queries */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block;
+    }
+    #main-nav {
+        display: block;
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 100%;
+        height: 0;
+        overflow: hidden;
+        background-color: var(--header-bg);
+        box-shadow: 0 4px 10px var(--header-shadow);
+        transition: height 0.3s ease-in-out;
+    }
+    #main-nav.open {
+        height: 300px;
+    }
+    #main-nav ul {
+        flex-direction: column;
+        width: 100%;
+        padding: 10px 0;
+    }
+    #main-nav ul li {
+        width: 100%;
+        text-align: center;
+    }
+    #main-nav ul li a {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        display: block;
+    }
+    body.dark-theme #main-nav ul li a { border-bottom-color: #555; }
+    body.menu-open .main-content {
+        filter: blur(2px);
+        pointer-events: none;
+    }
+
+    /* === ЗМІНИ ДЛЯ МОБІЛЬНИХ ПРИСТРОЇВ === */
+    .settings-and-controls {
+        flex-direction: column;
+        gap: 15px;
+        order: 4; /* Переміщуємо блок вниз */
+        margin-top: 15px;
+    }
+
+    .wheel-container {
+        order: 1; /* Колесо буде першим */
+    }
+
+    #result {
+        order: 2; /* Результат буде під колесом */
+    }
+
+    .action-buttons {
+        order: 3; /* Кнопка "Крутити" буде під результатом */
+        width: 100%;
+    }
+
+    #controls, #settings {
+        flex-direction: column;
+        gap: 15px;
+        padding: 10px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .main-btn {
+        width: 100%;
+    }
+
+    .add-exercise-form {
+        flex-direction: column;
+    }
+}

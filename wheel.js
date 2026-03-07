@@ -61,7 +61,11 @@
             exercise_too_short: "Назва вправи занадто коротка (мін. 2 символи)!",
             exercise_exists: "Ця вправа вже є у списку!",
             delete_exercise_confirm: "Видалити вправу",
-            delete_skin_confirm: "Видалити цей скін?"
+            delete_skin_confirm: "Видалити цей скін?",
+            beep_mute: "🔔 Біп: Увімк.",
+            beep_unmute: "🔇 Біп: Вимк.",
+            beep_mute_title: "Вимкнути звук біпу",
+            beep_unmute_title: "Увімкнути звук біпу"
         },
         en: {
             level_label: "Level:",
@@ -93,7 +97,11 @@
             exercise_too_short: "Exercise name is too short (min. 2 chars)!",
             exercise_exists: "This exercise is already in the list!",
             delete_exercise_confirm: "Delete exercise",
-            delete_skin_confirm: "Delete this skin?"
+            delete_skin_confirm: "Delete this skin?",
+            beep_mute: "🔔 Beep: On",
+            beep_unmute: "🔇 Beep: Off",
+            beep_mute_title: "Mute beep sound",
+            beep_unmute_title: "Unmute beep sound"
         }
     };
 
@@ -105,9 +113,26 @@
     audioSpin.volume = 0.6;
     audioBeep.volume = 0.8;
 
+    let beepMuted = localStorage.getItem('beepMuted') === 'true';
+
     function playSpin() { try { audioSpin.currentTime = 0; audioSpin.play().catch(() => {}); } catch(e) {} }
     function stopSpin() { try { audioSpin.pause(); audioSpin.currentTime = 0; } catch(e) {} }
-    function playBeep() { try { audioBeep.currentTime = 0; audioBeep.play().catch(() => {}); } catch(e) {} }
+    function playBeep() {
+        if (beepMuted) return;
+        try { audioBeep.currentTime = 0; audioBeep.play().catch(() => {}); } catch(e) {}
+    }
+
+    function updateBeepToggleBtn() {
+        const btn = document.getElementById('beep-toggle-btn');
+        if (!btn) return;
+        const lang = langStrings[currentLang];
+        btn.textContent = beepMuted
+            ? (lang.beep_unmute || '🔇 Звук біпу: Вимк.')
+            : (lang.beep_mute   || '🔔 Звук біпу: Увімк.');
+        btn.title = beepMuted
+            ? (lang.beep_unmute_title || 'Увімкнути звук біпу')
+            : (lang.beep_mute_title   || 'Вимкнути звук біпу');
+    }
 
     // --------- DOM -----------------
 
@@ -680,6 +705,7 @@
         renderExercises();
         renderSavedSkins();
         renderSessionCounter();
+        updateBeepToggleBtn();
     }
 
     function setTheme(theme) {
@@ -741,6 +767,16 @@
     if (categorySelect)  categorySelect.addEventListener('change', () => drawWheel(getExercisesForSpin()));
 
     if (skinUploadBtn)   skinUploadBtn.addEventListener('click', () => skinInput && skinInput.click());
+
+    const beepToggleBtn = document.getElementById('beep-toggle-btn');
+    if (beepToggleBtn) {
+        updateBeepToggleBtn();
+        beepToggleBtn.addEventListener('click', () => {
+            beepMuted = !beepMuted;
+            localStorage.setItem('beepMuted', beepMuted);
+            updateBeepToggleBtn();
+        });
+    }
     if (skinInput) skinInput.addEventListener('change', e => {
         const file = e.target.files[0];
         if (!file) return;

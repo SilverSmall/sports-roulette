@@ -1,39 +1,33 @@
-// Wrap the entire script in an IIFE to create a private scope
 (function() {
-    // Add a guard to prevent re-declaration if the script is run multiple times
     if (window.rouletteWheelAppInitialized) {
         console.warn("wheel.js is already initialized. Skipping re-initialization.");
-        return; // This return is now inside the IIFE, so it's valid
+        return;
     }
     window.rouletteWheelAppInitialized = true;
 
     // --------- Налаштування -----------------
 
-    // Оновлена структура даних для вправ з категоріями
+    const MAX_WHEEL_SEGMENTS = 16;
+
     const defaultExercises = {
-        legs: [
-            "Присідання", "Випади", "Присідання-Пліє", "Стрибки", "Випади назад"
-        ],
-        arms_chest: [
-            "Віджимання", "Віджимання від лавки", "Планка з переходом на руки", "Віджимання від колін", "Зворотні віджимання"
-        ],
-        core: [
-            "Прес", "Планка", "Велосипед", "Скручування", "Планка з підняттям рук", "Махи ногами"
-        ],
-        cardio: [
-            "Бурпі", "Стрибки на скакалці", "Стрибки з зіркою", "Біг на місці"
-        ]
+        legs:       ["Присідання", "Випади", "Присідання-Пліє", "Стрибки", "Випади назад"],
+        arms_chest: ["Віджимання", "Віджимання від лавки", "Планка з переходом на руки", "Віджимання від колін", "Зворотні віджимання"],
+        core:       ["Прес", "Планка", "Велосипед", "Скручування", "Планка з підняттям рук", "Махи ногами"],
+        cardio:     ["Бурпі", "Стрибки на скакалці", "Стрибки з зіркою", "Біг на місці"]
     };
+
     const superExercise = "Супер-вправа (30 сек макс. темп!)";
+
     const motivational = [
         "Ти зможеш більше, ніж думаєш!", "Ти молодець!", "Зроби ще крок до своєї цілі!",
         "Відпочинок — теж частина успіху!", "Сила в тобі!", "Залишайся на хвилі мотивації!",
         "Твої зусилля дають результат!", "Жоден підхід не марний!"
     ];
+
     const levels = {
-        easy: { min: 15, max: 25, plankMin: 10, plankMax: 15 },
+        easy:   { min: 15, max: 25, plankMin: 10, plankMax: 15 },
         medium: { min: 25, max: 40, plankMin: 20, plankMax: 30 },
-        hard: { min: 35, max: 60, plankMin: 40, plankMax: 60 }
+        hard:   { min: 35, max: 60, plankMin: 40, plankMax: 60 }
     };
 
     const langStrings = {
@@ -41,568 +35,541 @@
             level_label: "Рівень:",
             easy: "Легкий", medium: "Середній", hard: "Важкий", custom: "Свій",
             reps: "повторень",
-            lang_label: "Мова:",
-            theme_label: "Тема:",
+            lang_label: "Мова:", theme_label: "Тема:",
+            light: "Світла", dark: "Темна",
             press_spin: 'Натисни "Крутити!"',
-            play: '▶',
-            history: "Історія",
-            ex_list: "Список вправ",
-            spin_btn: "Крутити!",
-            new_ex_placeholder: "Назва вправи",
-            add_ex: "Додати",
-            back_to_wheel: "Назад до колеса",
-            reset_ex: "Скинути до стандартних",
-            clear_history: "Очистити історію",
-            timer_start: "Старт таймер",
-            timer_done: "Готово!",
+            play: "▶", history: "Історія", ex_list: "Список вправ", spin_btn: "Крутити!",
+            new_ex_placeholder: "Назва вправи", add_ex: "Додати",
+            back_to_wheel: "Назад до колеса", reset_ex: "Скинути до стандартних",
+            clear_history: "Очистити історію", timer_start: "Старт таймер", timer_done: "Готово!",
             custom_confirm_reset: "Ви впевнені, що хочете скинути всі вправи до стандартних?",
             custom_confirm_clear_history: "Ви впевнені, що хочете очистити історію?",
-            confirm_yes: "Так",
-            confirm_no: "Ні",
-            category_label: "Категорія:",
-            all_exercises: "Всі",
-            category_legs: "Ноги",
-            category_arms_chest: "Руки/Груди",
-            category_core: "Корпус",
-            category_cardio: "Кардіо",
-            skin_label: "Скін рулетки:",
-            upload_image: "Завантажити фото/GIF",
-            clear_skin: "Очистити",
-            ex_description: "Ви можете додавати або видаляти вправи.",
+            confirm_yes: "Так", confirm_no: "Ні",
+            category_label: "Категорія:", all_exercises: "Всі",
+            category_legs: "Ноги", category_arms_chest: "Руки/Груди",
+            category_core: "Корпус", category_cardio: "Кардіо",
+            skin_label: "Скін рулетки:", upload_image: "Завантажити фото/GIF",
+            clear_skin: "Очистити", ex_description: "Ви можете додавати або видаляти вправи.",
             no_exercises_in_category: "Немає вправ для обраної категорії!",
             history_empty: "Історія порожня.",
             paste_url_placeholder: "Або вставте посилання на GIF/фото",
-            apply_url: "Застосувати URL",
-            saved_skins_title: "Збережені скіни:",
+            apply_url: "Застосувати URL", saved_skins_title: "Збережені скіни:",
             skins_management: "Керування скінами",
-            skins_management_description: "Тут ви можете керувати збереженими скінами для рулетки."
+            skins_management_description: "Тут ви можете керувати збереженими скінами для рулетки.",
+            today_sessions: "Серій сьогодні:",
+            image_too_large: "Зображення занадто велике! Спробуйте файл до 2MB.",
+            exercise_too_short: "Назва вправи занадто коротка (мін. 2 символи)!",
+            exercise_exists: "Ця вправа вже є у списку!",
+            delete_exercise_confirm: "Видалити вправу",
+            delete_skin_confirm: "Видалити цей скін?"
         },
         en: {
             level_label: "Level:",
             easy: "Easy", medium: "Medium", hard: "Hard", custom: "Custom",
             reps: "reps",
-            lang_label: "Language:",
-            theme_label: "Theme:",
+            lang_label: "Language:", theme_label: "Theme:",
+            light: "Light", dark: "Dark",
             press_spin: 'Press "Spin!"',
-            play: '▶',
-            history: "History",
-            ex_list: "Exercise list",
-            spin_btn: "Spin!",
-            new_ex_placeholder: "Exercise name",
-            add_ex: "Add",
-            back_to_wheel: "Back to Wheel",
-            reset_ex: "Reset to default",
-            clear_history: "Clear history",
-            timer_start: "Start timer",
-            timer_done: "Done!",
+            play: "▶", history: "History", ex_list: "Exercise list", spin_btn: "Spin!",
+            new_ex_placeholder: "Exercise name", add_ex: "Add",
+            back_to_wheel: "Back to Wheel", reset_ex: "Reset to default",
+            clear_history: "Clear history", timer_start: "Start timer", timer_done: "Done!",
             custom_confirm_reset: "Are you sure you want to reset all exercises to default?",
             custom_confirm_clear_history: "Are you sure you want to clear the history?",
-            confirm_yes: "Yes",
-            confirm_no: "No",
-            category_label: "Category:",
-            all_exercises: "All",
-            category_legs: "Legs",
-            category_arms_chest: "Arms/Chest",
-            category_core: "Core",
-            category_cardio: "Cardio",
-            skin_label: "Roulette skin:",
-            upload_image: "Upload photo/GIF",
-            clear_skin: "Clear",
-            ex_description: "You can add or remove exercises.",
+            confirm_yes: "Yes", confirm_no: "No",
+            category_label: "Category:", all_exercises: "All",
+            category_legs: "Legs", category_arms_chest: "Arms/Chest",
+            category_core: "Core", category_cardio: "Cardio",
+            skin_label: "Roulette skin:", upload_image: "Upload photo/GIF",
+            clear_skin: "Clear", ex_description: "You can add or remove exercises.",
             no_exercises_in_category: "No exercises for the selected category!",
             history_empty: "History is empty.",
             paste_url_placeholder: "Or paste GIF/photo URL",
-            apply_url: "Apply URL",
-            saved_skins_title: "Saved Skins:",
+            apply_url: "Apply URL", saved_skins_title: "Saved Skins:",
             skins_management: "Manage Skins",
-            skins_management_description: "Here you can manage your saved roulette skins."
+            skins_management_description: "Here you can manage your saved roulette skins.",
+            today_sessions: "Today's sessions:",
+            image_too_large: "Image is too large! Try a file under 2MB.",
+            exercise_too_short: "Exercise name is too short (min. 2 chars)!",
+            exercise_exists: "This exercise is already in the list!",
+            delete_exercise_confirm: "Delete exercise",
+            delete_skin_confirm: "Delete this skin?"
         }
     };
 
-    // --------- Отримання DOM-елементів -----------------
-    const wheelCanvas = document.getElementById('wheel');
-    if (!wheelCanvas) {
-        console.error("Error: Canvas element with ID 'wheel' not found! Please ensure your index.html has <canvas id=\"wheel\"></canvas>");
+    // --------- Audio -----------------
+
+    const audioSpin = new Audio('spin.mp3');
+    const audioBeep = new Audio('beep-07.mp3');
+    audioSpin.loop   = true;
+    audioSpin.volume = 0.6;
+    audioBeep.volume = 0.8;
+
+    function playSpin() { try { audioSpin.currentTime = 0; audioSpin.play().catch(() => {}); } catch(e) {} }
+    function stopSpin() { try { audioSpin.pause(); audioSpin.currentTime = 0; } catch(e) {} }
+    function playBeep() { try { audioBeep.currentTime = 0; audioBeep.play().catch(() => {}); } catch(e) {} }
+
+    // --------- DOM -----------------
+
+    const wheelCanvas           = document.getElementById('wheel');
+    const ctx                   = wheelCanvas ? wheelCanvas.getContext('2d') : null;
+    const spinBtn               = document.getElementById('spin-btn');
+    const resultDiv             = document.getElementById('result');
+    const resultText            = document.getElementById('result-text');
+    const repsText              = document.getElementById('reps-text');
+    const levelSelect           = document.getElementById('level');
+    const langSelect            = document.getElementById('lang-select');
+    const themeSelect           = document.getElementById('theme-select');
+    const newExInput            = document.getElementById('new-ex-input');
+    const newExCategorySelect   = document.getElementById('new-ex-category');
+    const addExBtn              = document.getElementById('addExBtn');
+    const resetExBtn            = document.getElementById('resetExBtn');
+    const exercisesList         = document.getElementById('exercises-list');
+    const historyList           = document.getElementById('history');
+    const clearHistoryBtn       = document.getElementById('clearHistoryBtn');
+    const hamburger             = document.getElementById('hamburger');
+    const mainNav               = document.getElementById('main-nav');
+    const sections              = document.querySelectorAll('section');
+    const backToWheelBtns       = document.querySelectorAll('.back-to-wheel-btn');
+    const mainTitle             = document.getElementById('main-title');
+    const fullscreenTimer       = document.getElementById('fullscreen-timer');
+    const timerDisplay          = document.getElementById('fullscreen-timer-display');
+    const timerStartBtn         = document.getElementById('timer-start-btn');
+    const timerDoneBtn          = document.getElementById('timer-done-btn');
+    const fullscreenTimerEx     = document.getElementById('fullscreen-timer-exercise');
+    const fullscreenTimerMotiv  = document.getElementById('fullscreen-timer-motivation');
+    const customConfirm         = document.getElementById('custom-confirm');
+    const customConfirmText     = document.getElementById('custom-confirm-text');
+    const customConfirmYes      = document.getElementById('custom-confirm-yes');
+    const customConfirmNo       = document.getElementById('custom-confirm-no');
+    const categorySelect        = document.getElementById('category');
+    const skinInput             = document.getElementById('skin-input');
+    const skinUploadBtn         = document.getElementById('skin-upload-btn');
+    const skinClearBtn          = document.getElementById('skin-clear-btn');
+    const customSkinImage       = document.getElementById('custom-skin-image');
+    const skinUrlInput          = document.getElementById('skin-url-input');
+    const skinApplyUrlBtn       = document.getElementById('skin-apply-url-btn');
+    const savedSkinsList        = document.getElementById('saved-skins-list');
+    const settingsAndControls   = document.querySelector('.settings-and-controls');
+    const actionButtons         = document.querySelector('.action-buttons');
+
+    // --------- State -----------------
+
+    let isSpinning           = false;
+    let currentLang          = localStorage.getItem('lang')   || 'uk';
+    let currentTheme         = localStorage.getItem('theme')  || 'light';
+    let userExercises        = {};
+    let history              = JSON.parse(localStorage.getItem('history'))    || [];
+    let savedSkins           = JSON.parse(localStorage.getItem('savedSkins')) || [];
+    let timerInterval        = null;
+    let timerRunning         = false;
+    let currentExercise      = '';
+    let customSkinURL        = localStorage.getItem('customSkinURL') || '';
+    let currentWheelAngle    = 0; // normalized cumulative angle
+
+    // --------- Session Counter -----------------
+
+    function getTodaySessions() {
+        const today = new Date().toDateString();
+        const data  = JSON.parse(localStorage.getItem('sessionData') || '{}');
+        return data.date === today ? (data.count || 0) : 0;
     }
-    const ctx = wheelCanvas ? wheelCanvas.getContext('2d') : null;
-    if (!ctx && wheelCanvas) {
-        console.error("Error: Could not get 2D rendering context for canvas!");
+
+    function incrementTodaySessions() {
+        const today = new Date().toDateString();
+        const data  = JSON.parse(localStorage.getItem('sessionData') || '{}');
+        const count = (data.date === today ? (data.count || 0) : 0) + 1;
+        localStorage.setItem('sessionData', JSON.stringify({ date: today, count }));
+        renderSessionCounter();
     }
 
-    const spinBtn = document.getElementById('spin-btn');
-    const resultDiv = document.getElementById('result');
-    const resultText = document.getElementById('result-text');
-    const repsText = document.getElementById('reps-text');
-    const levelSelect = document.getElementById('level');
-    const langSelect = document.getElementById('lang-select');
-    const themeSelect = document.getElementById('theme-select');
-    const newExInput = document.getElementById('new-ex-input');
-    const newExCategorySelect = document.getElementById('new-ex-category');
-    const addExBtn = document.getElementById('addExBtn');
-    const resetExBtn = document.getElementById('resetExBtn');
-    const exercisesList = document.getElementById('exercises-list');
-    const historyList = document.getElementById('history');
-    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-    const hamburger = document.getElementById('hamburger');
-    const mainNav = document.getElementById('main-nav');
-    const sections = document.querySelectorAll('section');
-    const backToWheelBtns = document.querySelectorAll('.back-to-wheel-btn');
-    const mainContentElements = document.querySelectorAll('.main-content > div:not(#settings), .main-content > button, .main-content > div:not(#settings) > p');
-    const mainTitle = document.getElementById('main-title');
-
-    const fullscreenTimer = document.getElementById('fullscreen-timer');
-    const timerDisplay = document.getElementById('fullscreen-timer-display');
-    const timerStartBtn = document.getElementById('timer-start-btn');
-    const timerDoneBtn = document.getElementById('timer-done-btn');
-    const fullscreenTimerExercise = document.getElementById('fullscreen-timer-exercise');
-    const fullscreenTimerMotivation = document.getElementById('fullscreen-timer-motivation');
-    const customConfirm = document.getElementById('custom-confirm');
-    const customConfirmText = document.getElementById('custom-confirm-text');
-    const customConfirmYes = document.getElementById('custom-confirm-yes');
-    const customConfirmNo = document.getElementById('custom-confirm-no');
-    const categorySelect = document.getElementById('category');
-    const skinInput = document.getElementById('skin-input');
-    const skinUploadBtn = document.getElementById('skin-upload-btn');
-    const skinClearBtn = document.getElementById('skin-clear-btn');
-    const customSkinContainer = document.getElementById('custom-skin-container');
-    const customSkinImage = document.getElementById('custom-skin-image');
-    const skinUrlInput = document.getElementById('skin-url-input');
-    const skinApplyUrlBtn = document.getElementById('skin-apply-url-btn');
-    const savedSkinsList = document.getElementById('saved-skins-list');
-
-    const settingsAndControls = document.querySelector('.settings-and-controls');
-    const actionButtons = document.querySelector('.action-buttons');
-
-
-    let isSpinning = false;
-    let currentLang = localStorage.getItem('lang') || 'uk';
-    let currentTheme = localStorage.getItem('theme') || 'light';
-    let userExercises = {};
-    let history = JSON.parse(localStorage.getItem('history')) || [];
-    let savedSkins = JSON.parse(localStorage.getItem('savedSkins')) || [];
-    let spinTimeout;
-    let timerTimeout;
-    let timerRunning = false;
-    let currentExercise;
-    let currentReps;
-    let customSkinURL = localStorage.getItem('customSkinURL') || '';
-
-    function getCssVariable(variableName, defaultValue = '#000000') {
-        try {
-            const value = getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
-            if (!value) {
-                console.warn(`CSS variable ${variableName} is empty or not found. Using default: ${defaultValue}`);
-                return defaultValue;
-            }
-            console.log(`Getting CSS variable: ${variableName}, Value: ${value}`);
-            return value;
-        } catch (e) {
-            console.error(`Error getting CSS variable ${variableName}:`, e);
-            return defaultValue;
+    function renderSessionCounter() {
+        let counter = document.getElementById('session-counter');
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.id = 'session-counter';
+            counter.style.cssText = 'font-size:0.85em;color:var(--text-color-light);margin-top:6px;';
+            if (resultDiv) resultDiv.appendChild(counter);
         }
+        counter.textContent = `${langStrings[currentLang].today_sessions} ${getTodaySessions()}`;
     }
 
-    // --------- Функції рендерингу -----------------
+    // --------- CSS Var Helper -----------------
+
+    function getCssVar(name, fallback = '#cccccc') {
+        try {
+            const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+            return v || fallback;
+        } catch(e) { return fallback; }
+    }
+
+    // --------- Text wrapping for wheel -----------------
+
+    function wrapText(context, text, maxWidth) {
+        const words = text.split(' ');
+        if (words.length === 1) {
+            return truncate(context, text, maxWidth);
+        }
+        const lines = [];
+        let line = '';
+        for (const word of words) {
+            const test = line ? line + ' ' + word : word;
+            if (context.measureText(test).width > maxWidth && line) {
+                lines.push(truncate(context, line, maxWidth)[0]);
+                line = word;
+                if (lines.length >= 2) break;
+            } else {
+                line = test;
+            }
+        }
+        if (line) lines.push(truncate(context, line, maxWidth)[0]);
+        return lines;
+    }
+
+    function truncate(context, text, maxWidth) {
+        if (context.measureText(text).width <= maxWidth) return [text];
+        let t = '';
+        for (const ch of text) {
+            if (context.measureText(t + ch + '…').width < maxWidth) t += ch;
+            else break;
+        }
+        return [t + '…'];
+    }
+
+    // --------- Draw Wheel -----------------
 
     function drawWheel(exercisesToDraw) {
-        if (!ctx) {
-            console.error("drawWheel: Canvas rendering context is not available.");
-            return;
-        }
+        if (!ctx || !wheelCanvas) return;
 
-        const numExercises = exercisesToDraw.length;
-        const arc = (2 * Math.PI) / numExercises;
-        const radius = wheelCanvas.width / 2;
+        const exercises    = exercisesToDraw.slice(0, MAX_WHEEL_SEGMENTS);
+        const n            = exercises.length;
+        const arc          = (2 * Math.PI) / Math.max(n, 1);
+        const radius       = wheelCanvas.width / 2;
 
         ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
 
-        if (numExercises === 0) {
-            ctx.fillStyle = getCssVariable('--text-color', '#000000');
-            ctx.font = 'bold 20px Segoe UI';
-            ctx.textAlign = 'center';
+        if (n === 0) {
+            ctx.fillStyle    = getCssVar('--text-color', '#000');
+            ctx.font         = 'bold 16px Segoe UI';
+            ctx.textAlign    = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(langStrings[currentLang].no_exercises_in_category, radius, radius);
-            console.log("No exercises to draw. Displaying message.");
             return;
         }
 
         ctx.save();
         ctx.translate(radius, radius);
-        ctx.rotate(-Math.PI / 2); // Rotate by -90 degrees (counter-clockwise) to align 0-radian with 12 o'clock
+        ctx.rotate(-Math.PI / 2);
         ctx.translate(-radius, -radius);
 
-        for (let i = 0; i < numExercises; i++) {
+        for (let i = 0; i < n; i++) {
             const angle = i * arc;
+
+            // Sector fill
             ctx.beginPath();
-            ctx.arc(radius, radius, radius, angle, angle + arc);
-            ctx.lineTo(radius, radius);
-
-            const fillColor = getCssVariable(`--wheel-sector-${(i % 5) + 1}`, '#CCCCCC');
-            ctx.fillStyle = fillColor;
+            ctx.moveTo(radius, radius);
+            ctx.arc(radius, radius, radius - 2, angle, angle + arc);
+            ctx.closePath();
+            ctx.fillStyle = getCssVar(`--wheel-sector-${(i % 5) + 1}`, '#ccc');
             ctx.fill();
+
+            // Sector border
+            ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+            ctx.lineWidth   = 1.5;
+            ctx.stroke();
+
+            // Text
             ctx.save();
-
-            const textRadius = radius * 0.7;
-            ctx.translate(
-                radius + Math.cos(angle + arc / 2) * textRadius,
-                radius + Math.sin(angle + arc / 2) * textRadius
-            );
-            ctx.rotate(angle + arc / 2); // Keep text vertical relative to sector
-            ctx.textAlign = 'center';
+            const textR  = radius * 0.68;
+            const midAng = angle + arc / 2;
+            ctx.translate(radius + Math.cos(midAng) * textR, radius + Math.sin(midAng) * textR);
+            ctx.rotate(midAng);
+            ctx.textAlign    = 'center';
             ctx.textBaseline = 'middle';
-            const textColor = getCssVariable('--wheel-text-color', '#000000');
-            ctx.fillStyle = textColor;
-            ctx.font = 'bold 16px Segoe UI';
+            ctx.fillStyle    = getCssVar('--wheel-text-color', '#000');
 
-            const maxTextWidth = radius * 0.6;
-            let text = exercisesToDraw[i];
-            if (ctx.measureText(text).width > maxTextWidth) {
-                let tempText = '';
-                for (let j = 0; j < text.length; j++) {
-                    if (ctx.measureText(tempText + text[j] + '...').width < maxTextWidth) {
-                        tempText += text[j];
-                    } else {
-                        text = tempText + '...';
-                        break;
-                    }
-                }
-            }
-            ctx.fillText(text, 0, 0);
+            const fontSize = n <= 6 ? 15 : n <= 10 ? 13 : n <= 14 ? 11 : 9;
+            ctx.font = `bold ${fontSize}px Segoe UI`;
+
+            const maxW  = radius * 0.52;
+            const lines = wrapText(ctx, exercises[i], maxW);
+            const lh    = fontSize + 4;
+
+            lines.forEach((line, idx) => {
+                const yOffset = (idx - (lines.length - 1) / 2) * lh;
+                ctx.fillText(line, 0, yOffset);
+            });
             ctx.restore();
         }
+
         ctx.restore();
+
+        // Center dot
+        ctx.beginPath();
+        ctx.arc(radius, radius, radius * 0.09, 0, 2 * Math.PI);
+        ctx.fillStyle = getCssVar('--pointer-color', '#eb3b3b');
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+        ctx.lineWidth   = 2;
+        ctx.stroke();
     }
 
+    // --------- Render Lists -----------------
+
     function renderExercises() {
-        if (!exercisesList) {
-            console.error("renderExercises: exercisesList element not found.");
-            return;
-        }
+        if (!exercisesList) return;
         exercisesList.innerHTML = '';
-        const allExercises = getAllExercisesWithCategories();
-        allExercises.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = `${item.exercise} (${langStrings[currentLang][`category_${item.category}`] || item.category})`;
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = '×';
-            removeBtn.classList.add('remove-btn');
-            removeBtn.addEventListener('click', () => {
-                const confirmMsg = currentLang === 'uk' ? `Видалити вправу "${item.exercise}"?` : `Delete exercise "${item.exercise}"?`;
-                showCustomConfirm(confirmMsg, () => {
-                    removeExercise(item.exercise, item.category);
-                });
+        getAllExercisesWithCategories().forEach(item => {
+            const li        = document.createElement('li');
+            li.textContent  = `${item.exercise} (${langStrings[currentLang]['category_' + item.category] || item.category})`;
+            const btn       = document.createElement('button');
+            btn.textContent = '×';
+            btn.classList.add('remove-btn');
+            btn.addEventListener('click', () => {
+                const msg = `${langStrings[currentLang].delete_exercise_confirm} "${item.exercise}"?`;
+                showCustomConfirm(msg, () => removeExercise(item.exercise, item.category));
             });
-            li.appendChild(removeBtn);
+            li.appendChild(btn);
             exercisesList.appendChild(li);
         });
     }
 
     function renderHistory() {
-        if (!historyList) {
-            console.error("renderHistory: historyList element not found.");
-            return;
-        }
+        if (!historyList) return;
         historyList.innerHTML = '';
-        if (history.length === 0) {
+        if (!history.length) {
             historyList.innerHTML = `<li class="history-empty-message">${langStrings[currentLang].history_empty}</li>`;
             return;
         }
         history.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = `${item.exercise}: ${item.reps}`;
+            const li   = document.createElement('li');
+            const date = item.date ? `<span style="font-size:0.72em;opacity:0.55;margin-left:8px;">${item.date}</span>` : '';
+            li.innerHTML = `${item.exercise}: <b>${item.reps}</b>${date}`;
             historyList.appendChild(li);
         });
     }
 
     function renderSavedSkins() {
-        if (!savedSkinsList) {
-            console.error("renderSavedSkins: savedSkinsList element not found.");
-            return;
-        }
+        if (!savedSkinsList) return;
         savedSkinsList.innerHTML = '';
-        if (savedSkins.length === 0) {
-            savedSkinsList.innerHTML = `<li style="text-align: center; width: 100%; color: var(--text-color-light);">Немає збережених скінів.</li>`;
+        if (!savedSkins.length) {
+            savedSkinsList.innerHTML = `<li style="text-align:center;width:100%;color:var(--text-color-light);">Немає збережених скінів.</li>`;
             return;
         }
-        savedSkins.forEach(skinUrl => {
-            const li = document.createElement('li');
+        savedSkins.forEach(url => {
+            const li  = document.createElement('li');
             const img = document.createElement('img');
-            img.src = skinUrl;
-            img.alt = "Saved Skin";
-            img.onerror = () => {
-                img.src = 'https://placehold.co/100x100/cccccc/000000?text=Error';
-                img.alt = "Error loading image";
-            };
+            img.src   = url;
+            img.alt   = 'Saved Skin';
+            img.onerror = () => { img.src = 'https://placehold.co/100x100/cccccc/000?text=Error'; };
 
-            const actionsDiv = document.createElement('div');
-            actionsDiv.classList.add('skin-actions');
+            const actions = document.createElement('div');
+            actions.classList.add('skin-actions');
 
-            const loadBtn = document.createElement('button');
+            const loadBtn       = document.createElement('button');
             loadBtn.textContent = langStrings[currentLang].play;
             loadBtn.classList.add('secondary-btn');
-            loadBtn.style.padding = '5px 10px';
-            loadBtn.style.fontSize = '0.8em';
+            loadBtn.style.cssText = 'padding:5px 10px;font-size:0.8em;';
             loadBtn.addEventListener('click', () => {
-                customSkinURL = skinUrl;
+                customSkinURL = url;
                 localStorage.setItem('customSkinURL', customSkinURL);
                 applyCustomSkin();
             });
 
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = '×';
-            removeBtn.classList.add('danger-btn');
-            removeBtn.style.padding = '5px 10px';
-            removeBtn.style.fontSize = '0.8em';
-            removeBtn.addEventListener('click', () => {
-                const confirmMsg = currentLang === 'uk' ? "Видалити цей скін?" : "Delete this skin?";
-                showCustomConfirm(confirmMsg, () => {
-                    removeSavedSkin(skinUrl);
-                });
+            const delBtn       = document.createElement('button');
+            delBtn.textContent = '×';
+            delBtn.classList.add('danger-btn');
+            delBtn.style.cssText = 'padding:5px 10px;font-size:0.8em;';
+            delBtn.addEventListener('click', () => {
+                showCustomConfirm(langStrings[currentLang].delete_skin_confirm, () => removeSavedSkin(url));
             });
 
-            actionsDiv.appendChild(loadBtn);
-            actionsDiv.appendChild(removeBtn);
+            actions.appendChild(loadBtn);
+            actions.appendChild(delBtn);
             li.appendChild(img);
-            li.appendChild(actionsDiv);
+            li.appendChild(actions);
             savedSkinsList.appendChild(li);
         });
     }
 
-
-    // --------- Логіка збереження та завантаження -----------------
+    // --------- Storage -----------------
 
     function loadExercises() {
         try {
-            // Start with a clean copy of default exercises to ensure all categories are arrays
             userExercises = JSON.parse(JSON.stringify(defaultExercises));
-
-            const savedExercises = JSON.parse(localStorage.getItem('exercises'));
-
-            if (savedExercises) {
-                // Iterate over the saved exercises and merge them into the default structure
-                for (const category in savedExercises) {
-                    if (savedExercises.hasOwnProperty(category) && Array.isArray(savedExercises[category])) {
-                        // If the category exists in default and the saved data for it is an array
-                        if (userExercises.hasOwnProperty(category)) {
-                            // Filter out duplicates and add new exercises
-                            const existingExercises = new Set(userExercises[category]);
-                            savedExercises[category].forEach(ex => {
-                                if (typeof ex === 'string' && ex.trim() !== '' && !existingExercises.has(ex)) {
-                                    userExercises[category].push(ex);
-                                    existingExercises.add(ex); // Add to set to prevent future duplicates in this session
-                                }
-                            });
-                        } else {
-                            // If it's a new category not in default, add it if it's an array of strings
-                            // Ensure exercises are strings and not empty
-                            userExercises[category] = savedExercises[category].filter(ex => typeof ex === 'string' && ex.trim() !== '');
-                        }
+            const saved   = JSON.parse(localStorage.getItem('exercises'));
+            if (saved) {
+                for (const cat in saved) {
+                    if (!saved.hasOwnProperty(cat) || !Array.isArray(saved[cat])) continue;
+                    if (userExercises.hasOwnProperty(cat)) {
+                        const existing = new Set(userExercises[cat]);
+                        saved[cat].forEach(ex => {
+                            if (typeof ex === 'string' && ex.trim() && !existing.has(ex)) {
+                                userExercises[cat].push(ex);
+                                existing.add(ex);
+                            }
+                        });
                     } else {
-                        console.warn(`Skipping malformed saved exercise category: ${category}. Expected an array.`);
+                        userExercises[cat] = saved[cat].filter(ex => typeof ex === 'string' && ex.trim());
                     }
                 }
             }
-
-            const savedSkin = localStorage.getItem('customSkinURL');
-            if (savedSkin) {
-                customSkinURL = savedSkin;
-                applyCustomSkin();
-            }
+            const skin = localStorage.getItem('customSkinURL');
+            if (skin) { customSkinURL = skin; applyCustomSkin(); }
             savedSkins = JSON.parse(localStorage.getItem('savedSkins')) || [];
             renderSavedSkins();
-
-            console.log("Exercises loaded:", userExercises);
-        } catch (e) {
-            console.error("Error loading exercises from localStorage:", e);
-            // Fallback to default exercises if parsing or any other error occurs during loading
+        } catch(e) {
+            console.error("Error loading exercises:", e);
             userExercises = JSON.parse(JSON.stringify(defaultExercises));
         }
     }
 
-    function saveExercises() {
-        try {
-            localStorage.setItem('exercises', JSON.stringify(userExercises));
-            console.log("Exercises saved:", userExercises);
-        } catch (e) {
-            console.error("Error saving exercises to localStorage:", e);
-        }
-    }
+    function saveExercises() { try { localStorage.setItem('exercises', JSON.stringify(userExercises)); } catch(e) {} }
+    function saveHistory()   { try { localStorage.setItem('history',   JSON.stringify(history));       } catch(e) {} }
+    function saveSkins()     { try { localStorage.setItem('savedSkins', JSON.stringify(savedSkins));   } catch(e) {} }
 
-    function saveHistory() {
-        try {
-            localStorage.setItem('history', JSON.stringify(history));
-            console.log("History saved:", history);
-        } catch (e) {
-            console.error("Error saving history to localStorage:", e);
-        }
-    }
-
-    function saveSavedSkins() {
-        try {
-            localStorage.setItem('savedSkins', JSON.stringify(savedSkins));
-            console.log("Saved skins saved:", savedSkins);
-        } catch (e) {
-            console.error("Error saving saved skins to localStorage:", e);
-        }
-    }
-
-
-    // --------- Логіка програми -----------------
+    // --------- Exercise Logic -----------------
 
     function getAllExercisesWithCategories() {
         const all = [];
-        for (const category in userExercises) {
-            if (userExercises.hasOwnProperty(category)) { // Ensure it's not a prototype property
-                // Ensure userExercises[category] is an array before calling forEach
-                if (Array.isArray(userExercises[category])) {
-                    userExercises[category].forEach(ex => {
-                        all.push({ exercise: ex, category: category });
-                    });
-                } else {
-                    console.warn(`Category "${category}" in userExercises is not an array. Skipping.`);
-                }
+        for (const cat in userExercises) {
+            if (userExercises.hasOwnProperty(cat) && Array.isArray(userExercises[cat])) {
+                userExercises[cat].forEach(ex => all.push({ exercise: ex, category: cat }));
             }
         }
         return all;
     }
 
     function getExercisesForSpin() {
-        const selectedCategory = categorySelect.value;
-        if (selectedCategory === 'all') {
-            return getAllExercisesWithCategories().map(item => item.exercise);
+        const sel = categorySelect ? categorySelect.value : 'all';
+        let list;
+        if (sel === 'all') {
+            list = getAllExercisesWithCategories().map(i => i.exercise);
+        } else {
+            list = Array.isArray(userExercises[sel]) ? [...userExercises[sel]] : [];
         }
-        // Ensure userExercises[selectedCategory] is an array before returning
-        return Array.isArray(userExercises[selectedCategory]) ? userExercises[selectedCategory] : [];
+        return list.slice(0, MAX_WHEEL_SEGMENTS);
     }
+
+    // --------- Spin -----------------
+
+    function easeOutQuint(t) { return 1 - Math.pow(1 - t, 5); }
 
     function spinWheel() {
         if (isSpinning) return;
-        isSpinning = true;
-        if (spinBtn) {
-            spinBtn.disabled = true;
-            spinBtn.style.opacity = 0.7;
-        }
-
-        const exercisesToSpin = getExercisesForSpin();
-        if (exercisesToSpin.length === 0) {
+        const exercises = getExercisesForSpin();
+        if (!exercises.length) {
             if (resultText) resultText.textContent = langStrings[currentLang].no_exercises_in_category;
-            if (repsText) repsText.textContent = "";
-            isSpinning = false;
-            if (spinBtn) {
-                spinBtn.disabled = false;
-                spinBtn.style.opacity = 1;
-            }
+            if (repsText)   repsText.textContent   = '';
             return;
         }
 
-        const numExercises = exercisesToSpin.length;
-        const arc = (2 * Math.PI) / numExercises;
-        const spinTime = 5000;
-        const startTime = performance.now();
+        isSpinning = true;
+        if (spinBtn) { spinBtn.disabled = true; spinBtn.style.opacity = '0.7'; }
 
-        // Choose a random winning index first
-        const targetWinningIndex = Math.floor(Math.random() * numExercises);
-        const winningExercise = exercisesToSpin[targetWinningIndex];
+        playSpin();
 
-        // Calculate the exact angle to stop at, so the center of the winning sector is at 12 o'clock.
-        // The center of sector `targetWinningIndex` is at `targetWinningIndex * arc + arc / 2` (clockwise from 12 o'clock).
-        // Since the wheel rotates counter-clockwise, the wheel needs to rotate by this amount.
-        let targetRotation = (targetWinningIndex * arc + arc / 2);
+        const n           = exercises.length;
+        const arc         = (2 * Math.PI) / n;
+        const spinMs      = 4500;
+        const startTime   = performance.now();
+        const targetIdx   = Math.floor(Math.random() * n);
+        const winningEx   = exercises[targetIdx];
 
-        // Add several full rotations to ensure a smooth, visible spin
-        const numFullSpins = 5; // Spin at least 5 full rotations
-        targetRotation += numFullSpins * (2 * Math.PI);
+        // How many radians to rotate so targetIdx sector tops the pointer
+        // The sector centre in the wheel's own frame = targetIdx * arc + arc/2
+        // We need that point at 0 (top), so delta = that angle - current angle
+        let delta = (targetIdx * arc + arc / 2) - (currentWheelAngle % (2 * Math.PI));
+        if (delta < 0) delta += 2 * Math.PI;
+        const fullSpins  = (5 + Math.floor(Math.random() * 3)) * 2 * Math.PI;
+        const totalDelta = delta + fullSpins;
 
-        // NEW: Apply a small visual correction offset (in radians)
-        // This value might need fine-tuning based on visual inspection.
-        // A positive value means rotating more counter-clockwise.
-        // A negative value means rotating less counter-clockwise (or more clockwise).
-        const visualCorrectionOffset = -0.05; // Example: a small negative offset (clockwise shift)
-        targetRotation += visualCorrectionOffset;
-
+        const startAngle = currentWheelAngle;
 
         function animate() {
-            const elapsed = performance.now() - startTime;
-            const progress = Math.min(elapsed / spinTime, 1);
-            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const elapsed  = performance.now() - startTime;
+            const progress = Math.min(elapsed / spinMs, 1);
+            const eased    = easeOutQuint(progress);
+            const angle    = startAngle + eased * totalDelta;
 
-            // Calculate current rotation towards the targetRotation
-            const currentRotation = easeOut * targetRotation;
-            if (wheelCanvas) wheelCanvas.style.transform = `rotate(-${currentRotation}rad)`;
+            if (wheelCanvas) wheelCanvas.style.transform = `rotate(-${angle}rad)`;
 
             if (progress < 1) {
-                spinTimeout = requestAnimationFrame(animate);
+                requestAnimationFrame(animate);
             } else {
+                currentWheelAngle = (startAngle + totalDelta) % (2 * Math.PI);
+                if (wheelCanvas) wheelCanvas.style.transform = `rotate(-${currentWheelAngle}rad)`;
+                stopSpin();
+                playBeep();
                 isSpinning = false;
-                if (spinBtn) {
-                    spinBtn.disabled = false;
-                    spinBtn.style.opacity = 1;
-                }
-                displayResult(winningExercise); // Display the pre-determined winning exercise
+                if (spinBtn) { spinBtn.disabled = false; spinBtn.style.opacity = '1'; }
+                displayResult(winningEx);
             }
         }
-        animate();
+        requestAnimationFrame(animate);
     }
 
+    // --------- Display Result -----------------
+
     function displayResult(exercise) {
+        const level      = levelSelect ? levelSelect.value : 'medium';
+        const isTimeBased = exercise.includes("Планка") || exercise.includes("Plank") ||
+                            exercise.includes("сек")    || exercise.includes("sec");
         let reps;
-        const level = levelSelect.value;
-        if (exercise.includes("Планка") || exercise.includes("сек") || exercise.includes("Plank") || exercise.includes("sec")) {
+        if (isTimeBased) {
             const { plankMin, plankMax } = levels[level];
-            const duration = (exercise === superExercise) ? 30 : Math.floor(Math.random() * (plankMax - plankMin + 1)) + plankMin;
-            reps = `${duration} сек`;
+            const dur = exercise === superExercise ? 30 : Math.floor(Math.random() * (plankMax - plankMin + 1)) + plankMin;
+            reps = `${dur} сек`;
         } else {
             const { min, max } = levels[level];
             reps = `${Math.floor(Math.random() * (max - min + 1)) + min} ${langStrings[currentLang].reps}`;
         }
-        if (resultText) resultText.textContent = exercise;
-        if (repsText) repsText.textContent = reps;
 
-        history.unshift({ exercise: exercise, reps: reps });
-        if (history.length > 50) {
-            history.pop();
-        }
+        if (resultText) resultText.textContent = exercise;
+        if (repsText)   repsText.textContent   = reps;
+
+        const now     = new Date();
+        const dateStr = `${now.toLocaleDateString(currentLang === 'uk' ? 'uk-UA' : 'en-GB')} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        history.unshift({ exercise, reps, date: dateStr });
+        if (history.length > 50) history.pop();
         saveHistory();
         renderHistory();
+        incrementTodaySessions();
 
         if (reps.includes("сек") || reps.includes("sec")) {
-            startTimer(reps, exercise);
+            prepareTimer(reps, exercise);
         }
     }
 
-    // --------- Управління вправами -----------------
+    // --------- Exercise Management -----------------
 
     function addExercise() {
-        const newEx = newExInput.value.trim();
-        const newExCategory = newExCategorySelect.value;
-        if (newEx && newExCategory) {
-            const allExercises = getAllExercisesWithCategories().map(item => item.exercise);
-            if (!allExercises.includes(newEx)) {
-                if (!userExercises[newExCategory]) {
-                    userExercises[newExCategory] = [];
-                }
-                userExercises[newExCategory].push(newEx);
-                saveExercises();
-                renderExercises();
-                const exercisesToDraw = getExercisesForSpin();
-                drawWheel(exercisesToDraw);
-                newExInput.value = '';
-            } else {
-                showCustomConfirm("Ця вправа вже є у списку!", () => {});
-            }
+        const name = newExInput ? newExInput.value.trim() : '';
+        const cat  = newExCategorySelect ? newExCategorySelect.value : 'legs';
+        if (!name || name.length < 2) {
+            showCustomConfirm(langStrings[currentLang].exercise_too_short, () => {});
+            return;
         }
+        if (getAllExercisesWithCategories().some(i => i.exercise === name)) {
+            showCustomConfirm(langStrings[currentLang].exercise_exists, () => {});
+            return;
+        }
+        if (!userExercises[cat]) userExercises[cat] = [];
+        userExercises[cat].push(name);
+        saveExercises();
+        renderExercises();
+        drawWheel(getExercisesForSpin());
+        if (newExInput) newExInput.value = '';
     }
 
-    function removeExercise(exerciseToRemove, categoryToRemove) {
-        if (userExercises[categoryToRemove]) {
-            const index = userExercises[categoryToRemove].indexOf(exerciseToRemove);
-            if (index > -1) {
-                userExercises[categoryToRemove].splice(index, 1);
-                saveExercises();
-                renderExercises();
-                const exercisesToDraw = getExercisesForSpin();
-                drawWheel(exercisesToDraw);
-            }
+    function removeExercise(ex, cat) {
+        if (!userExercises[cat]) return;
+        const idx = userExercises[cat].indexOf(ex);
+        if (idx > -1) {
+            userExercises[cat].splice(idx, 1);
+            saveExercises();
+            renderExercises();
+            drawWheel(getExercisesForSpin());
         }
     }
 
@@ -610,310 +577,248 @@
         userExercises = JSON.parse(JSON.stringify(defaultExercises));
         saveExercises();
         renderExercises();
-        const exercisesToDraw = getExercisesForSpin();
-        drawWheel(exercisesToDraw);
+        drawWheel(getExercisesForSpin());
     }
 
-    // --------- Управління скінами (новий функціонал) -----------------
+    // --------- Skin Management -----------------
 
     function applyCustomSkin() {
-        if (customSkinImage) {
-            if (customSkinURL) {
-                customSkinImage.src = customSkinURL;
-                customSkinImage.style.display = 'block';
-            } else {
-                customSkinImage.style.display = 'none';
-                customSkinImage.src = '';
-            }
+        if (!customSkinImage) return;
+        if (customSkinURL) {
+            customSkinImage.src          = customSkinURL;
+            customSkinImage.style.display = 'block';
         } else {
-            console.warn("customSkinImage element not found for applyCustomSkin.");
+            customSkinImage.style.display = 'none';
+            customSkinImage.src           = '';
         }
     }
 
     function addSavedSkin(url) {
         if (!savedSkins.includes(url)) {
             savedSkins.unshift(url);
-            if (savedSkins.length > 10) {
-                savedSkins.pop();
-            }
-            saveSavedSkins();
+            if (savedSkins.length > 10) savedSkins.pop();
+            saveSkins();
             renderSavedSkins();
         }
     }
 
-    function removeSavedSkin(urlToRemove) {
-        savedSkins = savedSkins.filter(url => url !== urlToRemove);
-        saveSavedSkins();
+    function removeSavedSkin(url) {
+        savedSkins = savedSkins.filter(u => u !== url);
+        saveSkins();
         renderSavedSkins();
-        if (customSkinURL === urlToRemove) {
+        if (customSkinURL === url) {
             customSkinURL = '';
             localStorage.removeItem('customSkinURL');
             applyCustomSkin();
         }
     }
 
-    // --------- Інші функції -----------------
+    // --------- Timer -----------------
+
+    function prepareTimer(repsString, exercise) {
+        // Clear any running timer first
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        timerRunning = false;
+
+        const duration = parseInt(repsString);
+        if (isNaN(duration) || duration <= 0) return;
+
+        currentExercise = exercise;
+
+        if (fullscreenTimer)  fullscreenTimer.style.display   = 'flex';
+        if (fullscreenTimerEx)     fullscreenTimerEx.textContent   = exercise;
+        if (fullscreenTimerMotiv)  fullscreenTimerMotiv.textContent = motivational[Math.floor(Math.random() * motivational.length)];
+        if (timerDisplay)          timerDisplay.textContent         = formatTime(duration);
+        if (timerStartBtn)         timerStartBtn.style.display      = 'block';
+        if (timerDoneBtn)          timerDoneBtn.style.display       = 'none';
+
+        // Store pending duration for Start button
+        if (timerStartBtn) timerStartBtn._pendingDuration = duration;
+    }
+
+    function runTimer(duration) {
+        if (timerInterval) clearInterval(timerInterval);
+        timerRunning = true;
+        let timeLeft = duration;
+        if (timerStartBtn) timerStartBtn.style.display = 'none';
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            if (timerDisplay) timerDisplay.textContent = formatTime(timeLeft);
+            if (timeLeft > 0 && timeLeft <= 3) playBeep();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timerRunning  = false;
+                playBeep();
+                if (timerDisplay) timerDisplay.textContent = '0:00';
+                if (timerDoneBtn) timerDoneBtn.style.display = 'block';
+            }
+        }, 1000);
+    }
+
+    function formatTime(s) {
+        const m = Math.floor(s / 60);
+        const r = s % 60;
+        return `${m}:${r < 10 ? '0' : ''}${r}`;
+    }
+
+    // --------- Lang / Theme -----------------
 
     function setLang(lang) {
-        document.querySelectorAll('[data-lang]').forEach(element => {
-            const key = element.dataset.lang;
-            if (langStrings[lang] && langStrings[lang][key]) {
-                element.textContent = langStrings[lang][key];
-            }
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.dataset.lang;
+            if (langStrings[lang]?.[key]) el.textContent = langStrings[lang][key];
         });
-        document.querySelectorAll('[data-lang-placeholder]').forEach(element => {
-            const key = element.dataset.langPlaceholder;
-            if (langStrings[lang] && langStrings[lang][key]) {
-                element.placeholder = langStrings[lang][key];
-            } else {
-                console.warn(`Placeholder translation for key "${key}" not found in language "${lang}".`);
-            }
+        document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+            const key = el.dataset.langPlaceholder;
+            if (langStrings[lang]?.[key]) el.placeholder = langStrings[lang][key];
         });
-        const newExInputPlaceholder = langStrings[lang].new_ex_placeholder;
-        if(newExInputPlaceholder && newExInput) {
-            newExInput.placeholder = newExInputPlaceholder;
-        } else if (newExInput) {
-            console.warn(`Translation for new_ex_placeholder not found in language "${lang}".`);
-        }
-        if (skinUrlInput && langStrings[lang] && langStrings[lang].paste_url_placeholder) {
-            skinUrlInput.placeholder = langStrings[lang].paste_url_placeholder;
-        }
+        if (newExInput   && langStrings[lang].new_ex_placeholder)    newExInput.placeholder   = langStrings[lang].new_ex_placeholder;
+        if (skinUrlInput && langStrings[lang].paste_url_placeholder) skinUrlInput.placeholder = langStrings[lang].paste_url_placeholder;
         renderHistory();
         renderExercises();
         renderSavedSkins();
+        renderSessionCounter();
     }
 
     function setTheme(theme) {
-        if (theme === 'dark') {
-            document.body.classList.add('dark-theme');
-        } else {
-            document.body.classList.remove('dark-theme');
-        }
+        document.body.classList.toggle('dark-theme', theme === 'dark');
         localStorage.setItem('theme', theme);
-        const exercisesToDraw = getExercisesForSpin();
-        drawWheel(exercisesToDraw);
+        drawWheel(getExercisesForSpin());
     }
+
+    // --------- Navigation -----------------
 
     function showMainContent() {
-        sections.forEach(section => section.style.display = 'none');
-
-        const mainContentDiv = document.querySelector('.main-content');
-        if (mainContentDiv) mainContentDiv.style.display = 'flex';
-
+        sections.forEach(s => s.style.display = 'none');
+        const mc = document.querySelector('.main-content');
+        if (mc)                  mc.style.display = 'flex';
         if (settingsAndControls) settingsAndControls.style.display = 'flex';
-        if (actionButtons) actionButtons.style.display = 'flex';
-        if (mainTitle) mainTitle.style.display = 'block';
-        if (fullscreenTimer) fullscreenTimer.style.display = 'none';
-
-        const wheelContainer = document.querySelector('.wheel-container');
-        if (wheelContainer) wheelContainer.style.display = 'block';
+        if (actionButtons)       actionButtons.style.display = 'flex';
+        if (mainTitle)           mainTitle.style.display = 'block';
+        if (fullscreenTimer)     fullscreenTimer.style.display = 'none';
+        const wc = document.querySelector('.wheel-container');
+        if (wc)        wc.style.display = 'block';
         if (resultDiv) resultDiv.style.display = 'block';
-
-        // Redraw wheel in case canvas was resized or context lost while in another section
-        const exercisesToDraw = getExercisesForSpin();
-        drawWheel(exercisesToDraw);
+        drawWheel(getExercisesForSpin());
     }
 
-    function startTimer(repsString, exercise) {
-        if (timerRunning) {
-            clearInterval(timerTimeout);
-            timerRunning = false;
+    // --------- Custom Confirm -----------------
+
+    function showCustomConfirm(message, onConfirm) {
+        if (!customConfirm) { if (onConfirm) onConfirm(); return; }
+        customConfirm.classList.remove('hidden');
+        if (customConfirmText) customConfirmText.textContent = message;
+
+        function yes() { onConfirm(); cleanup(); customConfirm.classList.add('hidden'); }
+        function no()  {             cleanup(); customConfirm.classList.add('hidden'); }
+        function cleanup() {
+            customConfirmYes && customConfirmYes.removeEventListener('click', yes);
+            customConfirmNo  && customConfirmNo.removeEventListener('click', no);
         }
-
-        const duration = parseInt(repsString.split(' ')[0]);
-        if (isNaN(duration)) {
-            console.error("Invalid timer duration:", repsString);
-            return;
-        }
-
-        currentExercise = exercise;
-        timerRunning = true;
-        if (timerStartBtn) timerStartBtn.style.display = 'none';
-        if (timerDoneBtn) timerDoneBtn.style.display = 'none';
-        if (fullscreenTimer) fullscreenTimer.style.display = 'flex';
-        if (fullscreenTimerExercise) fullscreenTimerExercise.textContent = currentExercise;
-        if (fullscreenTimerMotivation) fullscreenTimerMotivation.textContent = motivational[Math.floor(Math.random() * motivational.length)];
-
-        let timeLeft = duration;
-        if (timerDisplay) timerDisplay.textContent = formatTime(timeLeft);
-
-        function timerTick() {
-            timeLeft--;
-            if (timerDisplay) timerDisplay.textContent = formatTime(timeLeft);
-            if (timeLeft <= 0) {
-                clearInterval(timerTimeout);
-                timerRunning = false;
-                if (timerDoneBtn) timerDoneBtn.style.display = 'block';
-                if (timerDisplay) timerDisplay.textContent = '0:00';
-            }
-        }
-        timerTimeout = setInterval(timerTick, 1000);
-    }
-
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        if (customConfirmYes) customConfirmYes.addEventListener('click', yes);
+        if (customConfirmNo)  customConfirmNo.addEventListener('click', no);
     }
 
     // --------- Event Listeners -----------------
 
-    if (spinBtn) spinBtn.addEventListener('click', spinWheel);
-    if (addExBtn) addExBtn.addEventListener('click', addExercise);
-    if (newExInput) newExInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            addExercise();
-        }
-    });
-    if (resetExBtn) resetExBtn.addEventListener('click', () => {
-        showCustomConfirm(langStrings[currentLang].custom_confirm_reset, resetExercises);
-    });
-    if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () => {
-        showCustomConfirm(langStrings[currentLang].custom_confirm_clear_history, () => {
-            history = [];
-            saveHistory();
-            renderHistory();
-        });
-    });
-    if (levelSelect) levelSelect.addEventListener('change', () => {
-        const exercisesToDraw = getExercisesForSpin();
-        drawWheel(exercisesToDraw);
-    });
-    if (langSelect) langSelect.addEventListener('change', (e) => {
+    if (spinBtn)         spinBtn.addEventListener('click', spinWheel);
+    if (addExBtn)        addExBtn.addEventListener('click', addExercise);
+    if (newExInput)      newExInput.addEventListener('keypress', e => { if (e.key === 'Enter') addExercise(); });
+    if (resetExBtn)      resetExBtn.addEventListener('click', () => showCustomConfirm(langStrings[currentLang].custom_confirm_reset, resetExercises));
+    if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () =>
+        showCustomConfirm(langStrings[currentLang].custom_confirm_clear_history, () => { history = []; saveHistory(); renderHistory(); })
+    );
+    if (levelSelect)     levelSelect.addEventListener('change',    () => drawWheel(getExercisesForSpin()));
+    if (langSelect)      langSelect.addEventListener('change',     e  => {
         currentLang = e.target.value;
         localStorage.setItem('lang', currentLang);
         setLang(currentLang);
-        const exercisesToDraw = getExercisesForSpin();
-        drawWheel(exercisesToDraw);
+        drawWheel(getExercisesForSpin());
     });
-    if (themeSelect) themeSelect.addEventListener('change', (e) => {
-        const theme = e.target.value;
-        setTheme(theme);
-    });
-    if (categorySelect) categorySelect.addEventListener('change', () => {
-        const exercisesToDraw = getExercisesForSpin();
-        drawWheel(exercisesToDraw);
-    });
-    if (skinUploadBtn) skinUploadBtn.addEventListener('click', () => {
-        if (skinInput) skinInput.click();
-    });
-    if (skinInput) skinInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                customSkinURL = e.target.result;
-                localStorage.setItem('customSkinURL', customSkinURL);
-                applyCustomSkin();
-                addSavedSkin(customSkinURL);
-            };
-            reader.readAsDataURL(file);
+    if (themeSelect)     themeSelect.addEventListener('change',    e  => setTheme(e.target.value));
+    if (categorySelect)  categorySelect.addEventListener('change', () => drawWheel(getExercisesForSpin()));
+
+    if (skinUploadBtn)   skinUploadBtn.addEventListener('click', () => skinInput && skinInput.click());
+    if (skinInput) skinInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            showCustomConfirm(langStrings[currentLang].image_too_large, () => {});
+            return;
         }
+        const reader = new FileReader();
+        reader.onload = ev => {
+            customSkinURL = ev.target.result;
+            localStorage.setItem('customSkinURL', customSkinURL);
+            applyCustomSkin();
+            addSavedSkin(customSkinURL);
+        };
+        reader.readAsDataURL(file);
     });
     if (skinClearBtn) skinClearBtn.addEventListener('click', () => {
         customSkinURL = '';
         localStorage.removeItem('customSkinURL');
         applyCustomSkin();
     });
-    if (skinApplyUrlBtn) {
-        skinApplyUrlBtn.addEventListener('click', () => {
-            const url = skinUrlInput.value.trim();
-            if (url) {
-                customSkinURL = url;
-                localStorage.setItem('customSkinURL', customSkinURL);
-                applyCustomSkin();
-                addSavedSkin(customSkinURL);
-                skinUrlInput.value = '';
-            } else {
-                console.warn("URL input for skin is empty.");
-            }
-        });
-    }
+    if (skinApplyUrlBtn) skinApplyUrlBtn.addEventListener('click', () => {
+        const url = skinUrlInput ? skinUrlInput.value.trim() : '';
+        if (url) {
+            customSkinURL = url;
+            localStorage.setItem('customSkinURL', customSkinURL);
+            applyCustomSkin();
+            addSavedSkin(customSkinURL);
+            if (skinUrlInput) skinUrlInput.value = '';
+        }
+    });
 
+    if (timerStartBtn) timerStartBtn.addEventListener('click', () => {
+        const dur = timerStartBtn._pendingDuration;
+        if (dur) runTimer(dur);
+    });
+    if (timerDoneBtn) timerDoneBtn.addEventListener('click', () => {
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        timerRunning = false;
+        showMainContent();
+    });
 
     document.querySelectorAll('header nav ul li a').forEach(link => {
-        link.addEventListener('click', (e) => {
+        link.addEventListener('click', e => {
             e.preventDefault();
             const targetId = link.getAttribute('href').substring(1);
-            sections.forEach(section => section.style.display = 'none');
-
-            const mainContentDiv = document.querySelector('.main-content');
-            if (mainContentDiv) mainContentDiv.style.display = 'none';
+            sections.forEach(s => s.style.display = 'none');
+            const mc = document.querySelector('.main-content');
+            if (mc)                  mc.style.display = 'none';
             if (settingsAndControls) settingsAndControls.style.display = 'none';
-            if (actionButtons) actionButtons.style.display = 'none';
-            if (mainTitle) mainTitle.style.display = 'none';
-
-
-            const targetSection = document.getElementById(targetId);
-            if (targetSection) {
-                targetSection.style.display = 'flex';
-            }
-
+            if (actionButtons)       actionButtons.style.display = 'none';
+            if (mainTitle)           mainTitle.style.display = 'none';
+            const target = document.getElementById(targetId);
+            if (target) target.style.display = 'flex';
             if (hamburger) hamburger.classList.remove('open');
-            if (mainNav) mainNav.classList.remove('open');
+            if (mainNav)   mainNav.classList.remove('open');
             document.body.classList.remove('menu-open');
         });
     });
 
     if (hamburger) hamburger.addEventListener('click', () => {
         hamburger.classList.toggle('open');
-        mainNav.classList.toggle('open');
+        if (mainNav) mainNav.classList.toggle('open');
         document.body.classList.toggle('menu-open');
     });
 
-    backToWheelBtns.forEach(btn => {
-        if (btn) btn.addEventListener('click', showMainContent);
-    });
+    backToWheelBtns.forEach(btn => { if (btn) btn.addEventListener('click', showMainContent); });
 
-    if (timerStartBtn) timerStartBtn.addEventListener('click', () => {
-        startTimer(currentReps, currentExercise);
-    });
-    if (timerDoneBtn) timerDoneBtn.addEventListener('click', () => {
-        timerRunning = false;
-        showMainContent();
-    });
-
-    function showCustomConfirm(message, onConfirm) {
-        if (!customConfirm || !customConfirmText || !customConfirmYes || !customConfirmNo) {
-            console.error("Custom confirm dialog elements not found. Cannot show confirm dialog.");
-            if (onConfirm) onConfirm();
-            return;
-        }
-        customConfirm.classList.remove('hidden');
-        customConfirmText.textContent = message;
-        const handleYes = () => {
-            onConfirm();
-            hideCustomConfirm();
-            customConfirmYes.removeEventListener('click', handleYes);
-            customConfirmNo.removeEventListener('click', handleNo);
-        };
-        const handleNo = () => {
-            hideCustomConfirm();
-            customConfirmYes.removeEventListener('click', handleYes);
-            customConfirmNo.removeEventListener('click', handleNo);
-        };
-        customConfirmYes.addEventListener('click', handleYes);
-        customConfirmNo.addEventListener('click', handleNo);
-    }
-
-    function hideCustomConfirm() {
-        if (customConfirm) {
-            customConfirm.classList.add('hidden');
-        }
-    }
-
-
-    // --------- Ініціалізація програми -----------------
+    // --------- Init -----------------
 
     document.addEventListener('DOMContentLoaded', () => {
         if (!wheelCanvas || !ctx) {
-            console.error("Initialization aborted: Canvas element or its 2D context is not available. Please check index.html.");
+            console.error("Canvas not available.");
             return;
         }
-
-        const wheelSize = Math.min(window.innerWidth * 0.8, 350);
-        wheelCanvas.width = wheelSize;
-        wheelCanvas.height = wheelSize;
+        const size = Math.min(window.innerWidth * 0.8, 350);
+        wheelCanvas.width  = size;
+        wheelCanvas.height = size;
 
         showMainContent();
         loadExercises();
@@ -922,22 +827,20 @@
         setLang(currentLang);
         setTheme(currentTheme);
 
-        setTimeout(() => {
-            const exercisesToDraw = getExercisesForSpin();
-            drawWheel(exercisesToDraw);
-        }, 100);
+        if (langSelect)  langSelect.value  = currentLang;
+        if (themeSelect) themeSelect.value = currentTheme;
+
+        setTimeout(() => drawWheel(getExercisesForSpin()), 100);
         applyCustomSkin();
+        renderSessionCounter();
     });
 
     window.addEventListener('resize', () => {
-        if (!wheelCanvas || !ctx) {
-            console.warn("Resize event: Canvas element or its 2D context is not available. Skipping redraw.");
-            return;
-        }
-        const wheelSize = Math.min(window.innerWidth * 0.8, 350);
-        wheelCanvas.width = wheelSize;
-        wheelCanvas.height = wheelSize;
-        const exercisesToDraw = getExercisesForSpin();
-        drawWheel(exercisesToDraw);
+        if (!wheelCanvas || !ctx) return;
+        const size = Math.min(window.innerWidth * 0.8, 350);
+        wheelCanvas.width  = size;
+        wheelCanvas.height = size;
+        drawWheel(getExercisesForSpin());
     });
-})(); // End of IIFE
+
+})();

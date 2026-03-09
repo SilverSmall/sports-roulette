@@ -30,8 +30,6 @@
         hard:   { min: 35, max: 60, plankMin: 40, plankMax: 60 }
     };
 
-    const MAX_CUSTOM_LEVELS = 3;
-
     const langStrings = {
         uk: {
             level_label: "Рівень:",
@@ -67,32 +65,7 @@
             beep_mute: "🔔 Біп: Увімк.",
             beep_unmute: "🔇 Біп: Вимк.",
             beep_mute_title: "Вимкнути звук біпу",
-            beep_unmute_title: "Увімкнути звук біпу",
-            // Custom levels
-            custom_levels_title: "Мої рівні",
-            custom_level_name: "Назва рівня",
-            custom_level_min: "Мін. повт.",
-            custom_level_max: "Макс. повт.",
-            custom_level_plank_min: "Мін. сек.",
-            custom_level_plank_max: "Макс. сек.",
-            add_custom_level: "➕ Додати рівень",
-            delete_custom_level: "Видалити цей рівень?",
-            custom_level_exists: "Рівень з такою назвою вже існує!",
-            custom_level_invalid: "Заповніть всі поля. Мін має бути менше макс!",
-            custom_level_limit: "Можна додати максимум 3 рівні!",
-            // New features
-            unlock_audio: "🔇 Звук",
-            unlock_audio_done: "🔔 Увімкнено!",
-            export_ex: "⬇ Експорт JSON",
-            import_ex: "⬆ Імпорт JSON",
-            import_success: "Вправи успішно імпортовано!",
-            import_error: "Помилка читання файлу!",
-            wheel_colors_title: "Кольори секторів:",
-            reset_colors: "Скинути кольори",
-            reminder_label: "Нагадування:",
-            reminder_off: "Вимк.",
-            reminder_notify: "💪 Час крутити колесо!",
-            no_saved_skins: "Немає збережених скінів."
+            beep_unmute_title: "Увімкнути звук біпу"
         },
         en: {
             level_label: "Level:",
@@ -128,32 +101,7 @@
             beep_mute: "🔔 Beep: On",
             beep_unmute: "🔇 Beep: Off",
             beep_mute_title: "Mute beep sound",
-            beep_unmute_title: "Unmute beep sound",
-            // Custom levels
-            custom_levels_title: "My Levels",
-            custom_level_name: "Level name",
-            custom_level_min: "Min reps",
-            custom_level_max: "Max reps",
-            custom_level_plank_min: "Min sec",
-            custom_level_plank_max: "Max sec",
-            add_custom_level: "➕ Add level",
-            delete_custom_level: "Delete this level?",
-            custom_level_exists: "A level with this name already exists!",
-            custom_level_invalid: "Fill all fields. Min must be less than max!",
-            custom_level_limit: "Maximum 3 custom levels allowed!",
-            // New features
-            unlock_audio: "🔇 Sound",
-            unlock_audio_done: "🔔 Enabled!",
-            export_ex: "⬇ Export JSON",
-            import_ex: "⬆ Import JSON",
-            import_success: "Exercises imported successfully!",
-            import_error: "Error reading file!",
-            wheel_colors_title: "Sector colors:",
-            reset_colors: "Reset colors",
-            reminder_label: "Reminder:",
-            reminder_off: "Off",
-            reminder_notify: "💪 Time to spin the wheel!",
-            no_saved_skins: "No saved skins."
+            beep_unmute_title: "Unmute beep sound"
         }
     };
 
@@ -229,25 +177,6 @@
     const savedSkinsList        = document.getElementById('saved-skins-list');
     const settingsAndControls   = document.querySelector('.settings-and-controls');
     const actionButtons         = document.querySelector('.action-buttons');
-    // New feature DOM refs
-    const unlockAudioBtn        = document.getElementById('unlock-audio-btn');
-    const exportExBtn           = document.getElementById('exportExBtn');
-    const importExBtn           = document.getElementById('importExBtn');
-    const importExInput         = document.getElementById('import-ex-input');
-    const resetColorsBtn        = document.getElementById('reset-colors-btn');
-    const colorInputs           = [1,2,3,4,5].map(i => document.getElementById(`color-${i}`));
-    const reminderIntervalSel   = document.getElementById('reminder-interval');
-    const reminderBanner        = document.getElementById('reminder-banner');
-    const reminderBannerText    = document.getElementById('reminder-banner-text');
-    const reminderBannerClose   = document.getElementById('reminder-banner-close');
-    // Custom levels DOM refs
-    const customLevelNameInput  = document.getElementById('custom-level-name');
-    const customLevelMinInput   = document.getElementById('custom-level-min');
-    const customLevelMaxInput   = document.getElementById('custom-level-max');
-    const customLevelPMinInput  = document.getElementById('custom-level-plank-min');
-    const customLevelPMaxInput  = document.getElementById('custom-level-plank-max');
-    const addCustomLevelBtn     = document.getElementById('add-custom-level-btn');
-    const customLevelsList      = document.getElementById('custom-levels-list');
 
     // --------- State -----------------
 
@@ -257,13 +186,11 @@
     let userExercises        = {};
     let history              = JSON.parse(localStorage.getItem('history'))    || [];
     let savedSkins           = JSON.parse(localStorage.getItem('savedSkins')) || [];
-    let customLevels         = JSON.parse(localStorage.getItem('customLevels')) || [];
     let timerInterval        = null;
     let timerRunning         = false;
     let currentExercise      = '';
     let customSkinURL        = localStorage.getItem('customSkinURL') || '';
-    let currentWheelAngle    = 0;
-    let reminderTimer        = null;
+    let currentWheelAngle    = 0; // normalized cumulative angle
 
     // --------- Session Counter -----------------
 
@@ -336,9 +263,10 @@
 
     // --------- Draw Wheel -----------------
 
-    function drawWheel(exercisesToDraw) {
+    function drawWheel(exercisesToDraw, rotationAngle) {
         if (!ctx || !wheelCanvas) return;
 
+        const angle0       = rotationAngle || 0;
         const exercises    = exercisesToDraw.slice(0, MAX_WHEEL_SEGMENTS);
         const n            = exercises.length;
         const arc          = (2 * Math.PI) / Math.max(n, 1);
@@ -357,7 +285,7 @@
 
         ctx.save();
         ctx.translate(radius, radius);
-        ctx.rotate(-Math.PI / 2);
+        ctx.rotate(-Math.PI / 2 - angle0);
         ctx.translate(-radius, -radius);
 
         for (let i = 0; i < n; i++) {
@@ -590,13 +518,13 @@
             const eased    = easeOutQuint(progress);
             const angle    = startAngle + eased * totalDelta;
 
-            if (wheelCanvas) wheelCanvas.style.transform = `rotate(-${angle}rad)`;
+            drawWheel(exercises, angle);
 
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
                 currentWheelAngle = (startAngle + totalDelta) % (2 * Math.PI);
-                if (wheelCanvas) wheelCanvas.style.transform = `rotate(-${currentWheelAngle}rad)`;
+                drawWheel(exercises, currentWheelAngle);
                 stopSpin();
                 playBeep();
                 isSpinning = false;
@@ -610,30 +538,21 @@
     // --------- Display Result -----------------
 
     function displayResult(exercise) {
-        const levelKey   = levelSelect ? levelSelect.value : 'medium';
-        const isTimeBased = /планк|plank|сек|sec/i.test(exercise);
-
-        // Resolve level config — built-in or custom
-        let levelCfg = levels[levelKey];
-        if (!levelCfg) {
-            const cl = customLevels.find(l => l.id === levelKey);
-            if (cl) levelCfg = cl;
-        }
-        if (!levelCfg) levelCfg = levels.medium;
-
+        const level      = levelSelect ? levelSelect.value : 'medium';
+        const isTimeBased = exercise.includes("Планка") || exercise.includes("Plank") ||
+                            exercise.includes("сек")    || exercise.includes("sec");
         let reps;
         if (isTimeBased) {
-            const dur = exercise === superExercise
-                ? 30
-                : Math.floor(Math.random() * (levelCfg.plankMax - levelCfg.plankMin + 1)) + levelCfg.plankMin;
+            const { plankMin, plankMax } = levels[level];
+            const dur = exercise === superExercise ? 30 : Math.floor(Math.random() * (plankMax - plankMin + 1)) + plankMin;
             reps = `${dur} сек`;
         } else {
-            reps = `${Math.floor(Math.random() * (levelCfg.max - levelCfg.min + 1)) + levelCfg.min} ${langStrings[currentLang].reps}`;
+            const { min, max } = levels[level];
+            reps = `${Math.floor(Math.random() * (max - min + 1)) + min} ${langStrings[currentLang].reps}`;
         }
 
         if (resultText) resultText.textContent = exercise;
         if (repsText)   repsText.textContent   = reps;
-        launchConfetti();
 
         const now     = new Date();
         const dateStr = `${now.toLocaleDateString(currentLang === 'uk' ? 'uk-UA' : 'en-GB')} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
@@ -665,7 +584,7 @@
         userExercises[cat].push(name);
         saveExercises();
         renderExercises();
-        drawWheel(getExercisesForSpin());
+        drawWheel(getExercisesForSpin(), currentWheelAngle);
         if (newExInput) newExInput.value = '';
     }
 
@@ -676,7 +595,7 @@
             userExercises[cat].splice(idx, 1);
             saveExercises();
             renderExercises();
-            drawWheel(getExercisesForSpin());
+            drawWheel(getExercisesForSpin(), currentWheelAngle);
         }
     }
 
@@ -684,7 +603,7 @@
         userExercises = JSON.parse(JSON.stringify(defaultExercises));
         saveExercises();
         renderExercises();
-        drawWheel(getExercisesForSpin());
+        drawWheel(getExercisesForSpin(), currentWheelAngle);
     }
 
     // --------- Skin Management -----------------
@@ -793,7 +712,7 @@
     function setTheme(theme) {
         document.body.classList.toggle('dark-theme', theme === 'dark');
         localStorage.setItem('theme', theme);
-        drawWheel(getExercisesForSpin());
+        drawWheel(getExercisesForSpin(), currentWheelAngle);
     }
 
     // --------- Navigation -----------------
@@ -809,7 +728,7 @@
         const wc = document.querySelector('.wheel-container');
         if (wc)        wc.style.display = 'block';
         if (resultDiv) resultDiv.style.display = 'block';
-        drawWheel(getExercisesForSpin());
+        drawWheel(getExercisesForSpin(), currentWheelAngle);
     }
 
     // --------- Custom Confirm -----------------
@@ -829,247 +748,6 @@
         if (customConfirmNo)  customConfirmNo.addEventListener('click', no);
     }
 
-    // --------- Custom Levels -----------------
-
-    function saveCustomLevels() {
-        localStorage.setItem('customLevels', JSON.stringify(customLevels));
-    }
-
-    function renderCustomLevels() {
-        if (!customLevelsList) return;
-        customLevelsList.innerHTML = '';
-        if (!customLevels.length) {
-            customLevelsList.innerHTML = `<li style="color:var(--text-color-light);font-size:0.9em;text-align:center;padding:10px;">—</li>`;
-            return;
-        }
-        customLevels.forEach(cl => {
-            const li = document.createElement('li');
-            li.className = 'custom-level-item';
-            li.innerHTML = `
-                <div class="custom-level-info">
-                    <strong>${cl.name}</strong>
-                    <span>${cl.min}–${cl.max} повт. &nbsp;|&nbsp; ${cl.plankMin}–${cl.plankMax} сек</span>
-                </div>
-                <button class="danger-btn remove-btn" data-id="${cl.id}">×</button>`;
-            li.querySelector('button').addEventListener('click', () => {
-                showCustomConfirm(langStrings[currentLang].delete_custom_level, () => {
-                    customLevels = customLevels.filter(c => c.id !== cl.id);
-                    saveCustomLevels();
-                    renderCustomLevels();
-                    rebuildLevelSelect();
-                });
-            });
-            customLevelsList.appendChild(li);
-        });
-    }
-
-    function rebuildLevelSelect() {
-        if (!levelSelect) return;
-        const current = levelSelect.value;
-        // Remove old custom options
-        Array.from(levelSelect.options).forEach(opt => {
-            if (opt.dataset.custom) opt.remove();
-        });
-        customLevels.forEach(cl => {
-            const opt = document.createElement('option');
-            opt.value = cl.id;
-            opt.textContent = cl.name;
-            opt.dataset.custom = '1';
-            levelSelect.appendChild(opt);
-        });
-        // Restore selection if still valid
-        if (Array.from(levelSelect.options).some(o => o.value === current)) {
-            levelSelect.value = current;
-        }
-    }
-
-    function addCustomLevel() {
-        const lang = langStrings[currentLang];
-        if (customLevels.length >= MAX_CUSTOM_LEVELS) {
-            showCustomConfirm(lang.custom_level_limit, () => {});
-            return;
-        }
-        const name    = customLevelNameInput ? customLevelNameInput.value.trim() : '';
-        const min     = parseInt(customLevelMinInput  ? customLevelMinInput.value  : '');
-        const max     = parseInt(customLevelMaxInput  ? customLevelMaxInput.value  : '');
-        const plankMin = parseInt(customLevelPMinInput ? customLevelPMinInput.value : '');
-        const plankMax = parseInt(customLevelPMaxInput ? customLevelPMaxInput.value : '');
-
-        if (!name || isNaN(min) || isNaN(max) || isNaN(plankMin) || isNaN(plankMax)
-            || min >= max || plankMin >= plankMax || min < 1 || plankMin < 1) {
-            showCustomConfirm(lang.custom_level_invalid, () => {});
-            return;
-        }
-        if (customLevels.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-            showCustomConfirm(lang.custom_level_exists, () => {});
-            return;
-        }
-        const id = 'custom_' + Date.now();
-        customLevels.push({ id, name, min, max, plankMin, plankMax });
-        saveCustomLevels();
-        renderCustomLevels();
-        rebuildLevelSelect();
-        // Clear inputs
-        [customLevelNameInput, customLevelMinInput, customLevelMaxInput,
-         customLevelPMinInput, customLevelPMaxInput].forEach(inp => { if (inp) inp.value = ''; });
-    }
-
-    // --------- Wheel Colors -----------------
-
-    const defaultColors = ['#ff6347','#4682b4','#32cd32','#ffa500','#9370db'];
-
-    function loadWheelColors() {
-        const saved = JSON.parse(localStorage.getItem('wheelColors') || 'null');
-        const colors = saved || defaultColors;
-        colors.forEach((c, i) => {
-            document.documentElement.style.setProperty(`--wheel-sector-${i+1}`, c);
-            if (colorInputs[i]) colorInputs[i].value = c;
-        });
-    }
-
-    function saveWheelColors() {
-        const colors = colorInputs.map((inp, i) => inp ? inp.value : defaultColors[i]);
-        localStorage.setItem('wheelColors', JSON.stringify(colors));
-        colors.forEach((c, i) => document.documentElement.style.setProperty(`--wheel-sector-${i+1}`, c));
-        drawWheel(getExercisesForSpin());
-    }
-
-    function resetWheelColors() {
-        localStorage.removeItem('wheelColors');
-        defaultColors.forEach((c, i) => {
-            document.documentElement.style.setProperty(`--wheel-sector-${i+1}`, c);
-            if (colorInputs[i]) colorInputs[i].value = c;
-        });
-        drawWheel(getExercisesForSpin());
-    }
-
-    // --------- Audio Unlock -----------------
-
-    let audioUnlocked = false;
-
-    function checkAudioOnLoad() {
-        const test = audioBeep.play();
-        if (test !== undefined) {
-            test.then(() => {
-                audioBeep.pause(); audioBeep.currentTime = 0;
-                audioUnlocked = true;
-            }).catch(() => {
-                if (unlockAudioBtn) unlockAudioBtn.style.display = 'inline-flex';
-            });
-        }
-    }
-
-    function tryUnlockAudio() {
-        if (audioUnlocked) return;
-        Promise.all([
-            audioSpin.play().then(() => { audioSpin.pause(); audioSpin.currentTime = 0; }).catch(()=>{}),
-            audioBeep.play().then(() => { audioBeep.pause(); audioBeep.currentTime = 0; }).catch(()=>{})
-        ]).then(() => {
-            audioUnlocked = true;
-            if (unlockAudioBtn) {
-                unlockAudioBtn.textContent = langStrings[currentLang].unlock_audio_done || '🔔 Увімкнено!';
-                setTimeout(() => { unlockAudioBtn.style.display = 'none'; }, 1500);
-            }
-        });
-    }
-
-    // --------- Confetti -----------------
-
-    function launchConfetti() {
-        let canvas = document.getElementById('confetti-canvas');
-        if (!canvas) {
-            canvas = document.createElement('canvas');
-            canvas.id = 'confetti-canvas';
-            document.body.appendChild(canvas);
-        }
-        canvas.width  = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const c2 = canvas.getContext('2d');
-        const pieces = Array.from({ length: 110 }, () => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height - canvas.height,
-            w: 6 + Math.random() * 9, h: 10 + Math.random() * 8,
-            color: `hsl(${Math.random()*360},90%,55%)`,
-            rot: Math.random() * 360,
-            vx: (Math.random() - 0.5) * 3, vy: 3 + Math.random() * 4, vr: (Math.random() - 0.5) * 6
-        }));
-        let frame = 0;
-        function draw() {
-            c2.clearRect(0, 0, canvas.width, canvas.height);
-            pieces.forEach(p => {
-                c2.save();
-                c2.translate(p.x + p.w/2, p.y + p.h/2);
-                c2.rotate(p.rot * Math.PI / 180);
-                c2.fillStyle = p.color;
-                c2.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-                c2.restore();
-                p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vy += 0.07;
-            });
-            frame++;
-            if (frame < 150) requestAnimationFrame(draw);
-            else c2.clearRect(0, 0, canvas.width, canvas.height);
-        }
-        draw();
-    }
-
-    // --------- Export / Import Exercises -----------------
-
-    function exportExercises() {
-        const blob = new Blob([JSON.stringify(userExercises, null, 2)], { type: 'application/json' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href = url; a.download = 'exercises.json'; a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    function importExercises(file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            try {
-                const imported = JSON.parse(e.target.result);
-                if (typeof imported !== 'object' || Array.isArray(imported)) throw new Error();
-                for (const cat in imported) { if (!Array.isArray(imported[cat])) throw new Error(); }
-                userExercises = imported;
-                saveExercises(); renderExercises(); drawWheel(getExercisesForSpin());
-                showCustomConfirm(langStrings[currentLang].import_success, () => {});
-            } catch(err) {
-                showCustomConfirm(langStrings[currentLang].import_error, () => {});
-            }
-        };
-        reader.readAsText(file);
-    }
-
-    // --------- Reminder -----------------
-
-    function startReminder(minutes) {
-        if (reminderTimer) { clearInterval(reminderTimer); reminderTimer = null; }
-        if (!minutes || minutes <= 0) return;
-        reminderTimer = setInterval(() => fireReminder(), minutes * 60 * 1000);
-    }
-
-    function fireReminder() {
-        const msg = langStrings[currentLang].reminder_notify || '💪 Час крутити колесо!';
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Тренувальна-рулетка', { body: msg, icon: 'image_bc9759.png' });
-        }
-        showReminderBanner(msg);
-        playBeep();
-    }
-
-    function showReminderBanner(msg) {
-        if (!reminderBanner) return;
-        if (reminderBannerText) reminderBannerText.textContent = msg;
-        reminderBanner.style.display = 'block';
-        clearTimeout(reminderBanner._hideTimer);
-        reminderBanner._hideTimer = setTimeout(() => { reminderBanner.style.display = 'none'; }, 8000);
-    }
-
-    function requestNotificationPermission() {
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-    }
-
     // --------- Event Listeners -----------------
 
     if (spinBtn)         spinBtn.addEventListener('click', spinWheel);
@@ -1079,15 +757,15 @@
     if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () =>
         showCustomConfirm(langStrings[currentLang].custom_confirm_clear_history, () => { history = []; saveHistory(); renderHistory(); })
     );
-    if (levelSelect)     levelSelect.addEventListener('change',    () => drawWheel(getExercisesForSpin()));
+    if (levelSelect)     levelSelect.addEventListener('change',    () => drawWheel(getExercisesForSpin(), currentWheelAngle));
     if (langSelect)      langSelect.addEventListener('change',     e  => {
         currentLang = e.target.value;
         localStorage.setItem('lang', currentLang);
         setLang(currentLang);
-        drawWheel(getExercisesForSpin());
+        drawWheel(getExercisesForSpin(), currentWheelAngle);
     });
     if (themeSelect)     themeSelect.addEventListener('change',    e  => setTheme(e.target.value));
-    if (categorySelect)  categorySelect.addEventListener('change', () => drawWheel(getExercisesForSpin()));
+    if (categorySelect)  categorySelect.addEventListener('change', () => drawWheel(getExercisesForSpin(), currentWheelAngle));
 
     if (skinUploadBtn)   skinUploadBtn.addEventListener('click', () => skinInput && skinInput.click());
 
@@ -1168,40 +846,6 @@
 
     backToWheelBtns.forEach(btn => { if (btn) btn.addEventListener('click', showMainContent); });
 
-    // Audio unlock
-    if (unlockAudioBtn) unlockAudioBtn.addEventListener('click', tryUnlockAudio);
-
-    // Export / Import
-    if (exportExBtn)   exportExBtn.addEventListener('click', exportExercises);
-    if (importExBtn)   importExBtn.addEventListener('click', () => importExInput && importExInput.click());
-    if (importExInput) importExInput.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (file) { importExercises(file); importExInput.value = ''; }
-    });
-
-    // Color pickers
-    colorInputs.forEach(inp => { if (inp) inp.addEventListener('input', saveWheelColors); });
-    if (resetColorsBtn) resetColorsBtn.addEventListener('click', resetWheelColors);
-
-    // Reminder
-    if (reminderIntervalSel) {
-        const savedInterval = parseInt(localStorage.getItem('reminderInterval') || '0');
-        reminderIntervalSel.value = savedInterval;
-        startReminder(savedInterval);
-        reminderIntervalSel.addEventListener('change', () => {
-            const mins = parseInt(reminderIntervalSel.value);
-            localStorage.setItem('reminderInterval', mins);
-            startReminder(mins);
-            if (mins > 0) requestNotificationPermission();
-        });
-    }
-    if (reminderBannerClose) reminderBannerClose.addEventListener('click', () => {
-        if (reminderBanner) reminderBanner.style.display = 'none';
-    });
-
-    // Custom levels
-    if (addCustomLevelBtn) addCustomLevelBtn.addEventListener('click', addCustomLevel);
-
     // --------- Init -----------------
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1209,9 +853,11 @@
             console.error("Canvas not available.");
             return;
         }
-        const size = Math.min(window.innerWidth * 0.8, 350);
+        const size = Math.min(window.innerWidth - 40, 350);
         wheelCanvas.width  = size;
         wheelCanvas.height = size;
+        const wc = document.querySelector('.wheel-container');
+        if (wc) { wc.style.width = size + 'px'; wc.style.height = size + 'px'; }
 
         showMainContent();
         loadExercises();
@@ -1219,25 +865,23 @@
         renderHistory();
         setLang(currentLang);
         setTheme(currentTheme);
-        loadWheelColors();
-        checkAudioOnLoad();
-        renderCustomLevels();
-        rebuildLevelSelect();
 
         if (langSelect)  langSelect.value  = currentLang;
         if (themeSelect) themeSelect.value = currentTheme;
 
-        setTimeout(() => drawWheel(getExercisesForSpin()), 100);
+        setTimeout(() => drawWheel(getExercisesForSpin(), currentWheelAngle), 100);
         applyCustomSkin();
         renderSessionCounter();
     });
 
     window.addEventListener('resize', () => {
         if (!wheelCanvas || !ctx) return;
-        const size = Math.min(window.innerWidth * 0.8, 350);
+        const size = Math.min(window.innerWidth - 40, 350);
         wheelCanvas.width  = size;
         wheelCanvas.height = size;
-        drawWheel(getExercisesForSpin());
+        const wc = document.querySelector('.wheel-container');
+        if (wc) { wc.style.width = size + 'px'; wc.style.height = size + 'px'; }
+        drawWheel(getExercisesForSpin(), currentWheelAngle);
     });
 
 })();

@@ -175,17 +175,18 @@ header {
     width: 350px;
     height: 350px;
     margin: 0 auto;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 10px 20px var(--section-shadow);
     border-radius: 50%;
     background-color: var(--main-bg-color);
+    overflow: hidden;
 }
 canvas {
-    width: 100%;
-    height: 100%;
+    display: block;
     border-radius: 50%;
-    /* NEW: Додайте фоновий колір для налагодження */
-    background-color: #f0f0f0; /* Світло-сірий для видимості */
+    background-color: #f0f0f0;
 }
 body.dark-theme .wheel-container canvas {
     background-color: #333; /* Темно-сірий для темної теми */
@@ -483,148 +484,6 @@ section h2 {
     gap: 5px;
     margin-top: 5px;
 }
-/* Custom Levels */
-.custom-level-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    max-width: 420px;
-    margin-top: 16px;
-}
-.custom-level-form input[type="text"],
-.custom-level-form input[type="number"] {
-    padding: 9px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--input-border);
-    background: var(--main-bg-color);
-    color: var(--text-color);
-    font-size: 0.95em;
-    width: 100%;
-    box-sizing: border-box;
-}
-.custom-level-row {
-    display: flex;
-    gap: 12px;
-}
-.custom-level-row label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-    font-size: 0.82em;
-    font-weight: 600;
-    color: var(--text-color-light);
-}
-#custom-levels-list {
-    list-style: none;
-    padding: 0;
-    width: 100%;
-    margin-bottom: 6px;
-}
-.custom-level-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--input-border);
-    gap: 10px;
-}
-.custom-level-item:last-child { border-bottom: none; }
-.custom-level-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-.custom-level-info strong { font-size: 1em; }
-.custom-level-info span   { font-size: 0.8em; color: var(--text-color-light); }
-
-/* Color picker */
-#wheel-color-settings {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    border-top: 1px solid var(--input-border);
-    padding-top: 16px;
-}
-#wheel-color-settings h3 { margin: 0; }
-.color-pickers-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.color-pickers-row label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.85em;
-    font-weight: 600;
-    color: var(--text-color-light);
-}
-.color-pickers-row input[type="color"] {
-    width: 44px;
-    height: 44px;
-    border: 2px solid var(--input-border);
-    border-radius: 8px;
-    cursor: pointer;
-    padding: 2px;
-    background: none;
-}
-
-/* Confetti */
-#confetti-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 1999;
-}
-
-/* Unlock audio button */
-#unlock-audio-btn { animation: pulse-glow 1.5s infinite; }
-@keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.5); }
-    50%       { box-shadow: 0 0 0 8px rgba(255,215,0,0); }
-}
-
-/* Reminder Banner */
-#reminder-banner {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2500;
-    animation: slideUp 0.4s ease;
-}
-@keyframes slideUp {
-    from { transform: translateX(-50%) translateY(80px); opacity: 0; }
-    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
-}
-#reminder-banner-content {
-    background: var(--button-bg);
-    color: var(--text-color);
-    padding: 14px 20px;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 1em;
-    font-weight: 600;
-    white-space: nowrap;
-}
-#reminder-banner-close {
-    padding: 4px 10px;
-    font-size: 0.85em;
-    background: rgba(0,0,0,0.12);
-    border: none;
-}
-
 /* Media Queries */
 @media (max-width: 768px) {
     .hamburger {

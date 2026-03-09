@@ -66,15 +66,18 @@
             beep_unmute: "🔇 Біп: Вимк.",
             beep_mute_title: "Вимкнути звук біпу",
             beep_unmute_title: "Увімкнути звук біпу",
-            no_saved_skins: "Немає збережених скінів.",
             unlock_audio: "🔇 Звук",
-            unlock_audio_done: "🔔 Звук увімк.",
+            unlock_audio_done: "🔔 Увімкнено!",
             export_ex: "⬇ Експорт JSON",
             import_ex: "⬆ Імпорт JSON",
-            import_success: "Вправи успішно імпортовані!",
-            import_error: "Помилка імпорту файлу!",
+            import_success: "Вправи успішно імпортовано!",
+            import_error: "Помилка читання файлу!",
             wheel_colors_title: "Кольори секторів:",
-            reset_colors: "Скинути кольори"
+            reset_colors: "Скинути кольори",
+            reminder_label: "Нагадування:",
+            reminder_off: "Вимк.",
+            reminder_notify: "💪 Час крутити колесо!",
+            no_saved_skins: "Немає збережених скінів."
         },
         en: {
             level_label: "Level:",
@@ -111,15 +114,18 @@
             beep_unmute: "🔇 Beep: Off",
             beep_mute_title: "Mute beep sound",
             beep_unmute_title: "Unmute beep sound",
-            no_saved_skins: "No saved skins.",
             unlock_audio: "🔇 Sound",
-            unlock_audio_done: "🔔 Sound on!",
+            unlock_audio_done: "🔔 Enabled!",
             export_ex: "⬇ Export JSON",
             import_ex: "⬆ Import JSON",
             import_success: "Exercises imported successfully!",
-            import_error: "Error importing file!",
+            import_error: "Error reading file!",
             wheel_colors_title: "Sector colors:",
-            reset_colors: "Reset colors"
+            reset_colors: "Reset colors",
+            reminder_label: "Reminder:",
+            reminder_off: "Off",
+            reminder_notify: "💪 Time to spin the wheel!",
+            no_saved_skins: "No saved skins."
         }
     };
 
@@ -201,6 +207,10 @@
     const importExInput         = document.getElementById('import-ex-input');
     const resetColorsBtn        = document.getElementById('reset-colors-btn');
     const colorInputs           = [1,2,3,4,5].map(i => document.getElementById(`color-${i}`));
+    const reminderIntervalSel   = document.getElementById('reminder-interval');
+    const reminderBanner        = document.getElementById('reminder-banner');
+    const reminderBannerText    = document.getElementById('reminder-banner-text');
+    const reminderBannerClose   = document.getElementById('reminder-banner-close');
 
     // --------- State -----------------
 
@@ -214,7 +224,8 @@
     let timerRunning         = false;
     let currentExercise      = '';
     let customSkinURL        = localStorage.getItem('customSkinURL') || '';
-    let currentWheelAngle    = 0; // normalized cumulative angle
+    let currentWheelAngle    = 0;
+    let reminderTimer        = null;
 
     // --------- Session Counter -----------------
 
@@ -266,7 +277,7 @@
     }
 
     function saveWheelColors() {
-        const colors = colorInputs.map(inp => inp ? inp.value : defaultColors[0]);
+        const colors = colorInputs.map((inp, i) => inp ? inp.value : defaultColors[i]);
         localStorage.setItem('wheelColors', JSON.stringify(colors));
         colors.forEach((c, i) => document.documentElement.style.setProperty(`--wheel-sector-${i+1}`, c));
         drawWheel(getExercisesForSpin());
@@ -285,33 +296,30 @@
 
     let audioUnlocked = false;
 
-    function tryUnlockAudio() {
-        if (audioUnlocked) return;
-        Promise.all([
-            audioSpin.play().then(() => { audioSpin.pause(); audioSpin.currentTime = 0; }),
-            audioBeep.play().then(() => { audioBeep.pause(); audioBeep.currentTime = 0; })
-        ]).then(() => {
-            audioUnlocked = true;
-            if (unlockAudioBtn) {
-                unlockAudioBtn.style.display = 'none';
-                unlockAudioBtn.style.animation = 'none';
-            }
-        }).catch(() => {
-            if (unlockAudioBtn) unlockAudioBtn.style.display = 'inline-flex';
-        });
-    }
-
     function checkAudioOnLoad() {
-        // Try silently; if blocked, show the button
-        const testPlay = audioBeep.play();
-        if (testPlay !== undefined) {
-            testPlay.then(() => {
+        const test = audioBeep.play();
+        if (test !== undefined) {
+            test.then(() => {
                 audioBeep.pause(); audioBeep.currentTime = 0;
                 audioUnlocked = true;
             }).catch(() => {
                 if (unlockAudioBtn) unlockAudioBtn.style.display = 'inline-flex';
             });
         }
+    }
+
+    function tryUnlockAudio() {
+        if (audioUnlocked) return;
+        Promise.all([
+            audioSpin.play().then(() => { audioSpin.pause(); audioSpin.currentTime = 0; }).catch(()=>{}),
+            audioBeep.play().then(() => { audioBeep.pause(); audioBeep.currentTime = 0; }).catch(()=>{})
+        ]).then(() => {
+            audioUnlocked = true;
+            if (unlockAudioBtn) {
+                unlockAudioBtn.textContent = langStrings[currentLang].unlock_audio_done || '🔔 Увімкнено!';
+                setTimeout(() => { unlockAudioBtn.style.display = 'none'; }, 1500);
+            }
+        });
     }
 
     // --------- Confetti -----------------
@@ -325,36 +333,33 @@
         }
         canvas.width  = window.innerWidth;
         canvas.height = window.innerHeight;
-        const ctx2    = canvas.getContext('2d');
-        const pieces  = Array.from({ length: 120 }, () => ({
-            x:     Math.random() * canvas.width,
-            y:     Math.random() * canvas.height - canvas.height,
-            w:     6 + Math.random() * 8,
-            h:     10 + Math.random() * 8,
+        const c2 = canvas.getContext('2d');
+        const pieces = Array.from({ length: 110 }, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height - canvas.height,
+            w: 6 + Math.random() * 9,
+            h: 10 + Math.random() * 8,
             color: `hsl(${Math.random()*360},90%,55%)`,
-            rot:   Math.random() * 360,
-            vx:    (Math.random() - 0.5) * 3,
-            vy:    3 + Math.random() * 4,
-            vr:    (Math.random() - 0.5) * 6
+            rot: Math.random() * 360,
+            vx: (Math.random() - 0.5) * 3,
+            vy: 3 + Math.random() * 4,
+            vr: (Math.random() - 0.5) * 6
         }));
         let frame = 0;
         function draw() {
-            ctx2.clearRect(0, 0, canvas.width, canvas.height);
+            c2.clearRect(0, 0, canvas.width, canvas.height);
             pieces.forEach(p => {
-                ctx2.save();
-                ctx2.translate(p.x + p.w/2, p.y + p.h/2);
-                ctx2.rotate(p.rot * Math.PI / 180);
-                ctx2.fillStyle = p.color;
-                ctx2.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-                ctx2.restore();
-                p.x  += p.vx;
-                p.y  += p.vy;
-                p.rot += p.vr;
-                p.vy += 0.07;
+                c2.save();
+                c2.translate(p.x + p.w/2, p.y + p.h/2);
+                c2.rotate(p.rot * Math.PI / 180);
+                c2.fillStyle = p.color;
+                c2.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+                c2.restore();
+                p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vy += 0.07;
             });
             frame++;
-            if (frame < 160) requestAnimationFrame(draw);
-            else { ctx2.clearRect(0, 0, canvas.width, canvas.height); }
+            if (frame < 150) requestAnimationFrame(draw);
+            else c2.clearRect(0, 0, canvas.width, canvas.height);
         }
         draw();
     }
@@ -366,9 +371,7 @@
         const blob = new Blob([data], { type: 'application/json' });
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement('a');
-        a.href     = url;
-        a.download = 'exercises.json';
-        a.click();
+        a.href = url; a.download = 'exercises.json'; a.click();
         URL.revokeObjectURL(url);
     }
 
@@ -382,15 +385,51 @@
                     if (!Array.isArray(imported[cat])) throw new Error();
                 }
                 userExercises = imported;
-                saveExercises();
-                renderExercises();
-                drawWheel(getExercisesForSpin());
+                saveExercises(); renderExercises(); drawWheel(getExercisesForSpin());
                 showCustomConfirm(langStrings[currentLang].import_success, () => {});
             } catch(err) {
                 showCustomConfirm(langStrings[currentLang].import_error, () => {});
             }
         };
         reader.readAsText(file);
+    }
+
+    // --------- Reminder / Notifications -----------------
+
+    function startReminder(minutes) {
+        if (reminderTimer) { clearInterval(reminderTimer); reminderTimer = null; }
+        if (!minutes || minutes <= 0) return;
+        const ms = minutes * 60 * 1000;
+        reminderTimer = setInterval(() => fireReminder(), ms);
+    }
+
+    function fireReminder() {
+        const msg = langStrings[currentLang].reminder_notify || '💪 Час крутити колесо!';
+        // 1. Push notification (if permitted)
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Тренувальна-рулетка', { body: msg, icon: 'image_bc9759.png' });
+        }
+        // 2. In-page banner (always shown)
+        showReminderBanner(msg);
+        // 3. Beep sound
+        playBeep();
+    }
+
+    function showReminderBanner(msg) {
+        if (!reminderBanner) return;
+        if (reminderBannerText) reminderBannerText.textContent = msg;
+        reminderBanner.style.display = 'block';
+        // Auto-hide after 8 seconds
+        clearTimeout(reminderBanner._hideTimer);
+        reminderBanner._hideTimer = setTimeout(() => {
+            reminderBanner.style.display = 'none';
+        }, 8000);
+    }
+
+    function requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
     }
 
     // --------- Text wrapping for wheel -----------------
@@ -543,7 +582,7 @@
         if (!savedSkinsList) return;
         savedSkinsList.innerHTML = '';
         if (!savedSkins.length) {
-            savedSkinsList.innerHTML = `<li style="text-align:center;width:100%;color:var(--text-color-light);">Немає збережених скінів.</li>`;
+            savedSkinsList.innerHTML = `<li style="text-align:center;width:100%;color:var(--text-color-light);">${langStrings[currentLang].no_saved_skins || 'Немає збережених скінів.'}</li>`;
             return;
         }
         savedSkins.forEach(url => {
@@ -717,7 +756,6 @@
 
         if (resultText) resultText.textContent = exercise;
         if (repsText)   repsText.textContent   = reps;
-
         launchConfetti();
 
         const now     = new Date();
@@ -933,27 +971,6 @@
     if (themeSelect)     themeSelect.addEventListener('change',    e  => setTheme(e.target.value));
     if (categorySelect)  categorySelect.addEventListener('change', () => drawWheel(getExercisesForSpin()));
 
-    // Audio unlock
-    if (unlockAudioBtn) unlockAudioBtn.addEventListener('click', () => {
-        tryUnlockAudio();
-        unlockAudioBtn.textContent = langStrings[currentLang].unlock_audio_done || '🔔 Звук увімк.';
-        setTimeout(() => { unlockAudioBtn.style.display = 'none'; }, 1500);
-    });
-
-    // Export / Import exercises
-    if (exportExBtn)   exportExBtn.addEventListener('click', exportExercises);
-    if (importExBtn)   importExBtn.addEventListener('click', () => importExInput && importExInput.click());
-    if (importExInput) importExInput.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (file) { importExercises(file); importExInput.value = ''; }
-    });
-
-    // Color pickers
-    colorInputs.forEach((inp, i) => {
-        if (inp) inp.addEventListener('input', saveWheelColors);
-    });
-    if (resetColorsBtn) resetColorsBtn.addEventListener('click', resetWheelColors);
-
     if (skinUploadBtn)   skinUploadBtn.addEventListener('click', () => skinInput && skinInput.click());
 
     const beepToggleBtn = document.getElementById('beep-toggle-btn');
@@ -1032,6 +1049,39 @@
     });
 
     backToWheelBtns.forEach(btn => { if (btn) btn.addEventListener('click', showMainContent); });
+
+    // Audio unlock
+    if (unlockAudioBtn) unlockAudioBtn.addEventListener('click', tryUnlockAudio);
+
+    // Export / Import
+    if (exportExBtn)   exportExBtn.addEventListener('click', exportExercises);
+    if (importExBtn)   importExBtn.addEventListener('click', () => importExInput && importExInput.click());
+    if (importExInput) importExInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) { importExercises(file); importExInput.value = ''; }
+    });
+
+    // Color pickers
+    colorInputs.forEach(inp => { if (inp) inp.addEventListener('input', saveWheelColors); });
+    if (resetColorsBtn) resetColorsBtn.addEventListener('click', resetWheelColors);
+
+    // Reminder interval selector
+    if (reminderIntervalSel) {
+        const savedInterval = parseInt(localStorage.getItem('reminderInterval') || '0');
+        reminderIntervalSel.value = savedInterval;
+        startReminder(savedInterval);
+        reminderIntervalSel.addEventListener('change', () => {
+            const mins = parseInt(reminderIntervalSel.value);
+            localStorage.setItem('reminderInterval', mins);
+            startReminder(mins);
+            if (mins > 0) requestNotificationPermission();
+        });
+    }
+
+    // Reminder banner close
+    if (reminderBannerClose) reminderBannerClose.addEventListener('click', () => {
+        if (reminderBanner) reminderBanner.style.display = 'none';
+    });
 
     // --------- Init -----------------
 

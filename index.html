@@ -64,6 +64,19 @@
             <label>
                 <button id="beep-toggle-btn" class="secondary-btn" style="white-space:nowrap;">🔔 Біп: Увімк.</button>
             </label>
+            <label>
+                <span data-lang="reminder_label">Нагадування:</span>
+                <select id="reminder-interval">
+                    <option value="0" data-lang="reminder_off">Вимк.</option>
+                    <option value="30">30 хв</option>
+                    <option value="60">1 год</option>
+                    <option value="90">1.5 год</option>
+                    <option value="120">2 год</option>
+                </select>
+            </label>
+            <label>
+                <button id="unlock-audio-btn" class="secondary-btn" style="display:none;white-space:nowrap;">🔇 Звук</button>
+            </label>
         </div>
     </div>
 
@@ -77,7 +90,6 @@
 
     <div class="action-buttons">
         <button id="spin-btn" class="main-btn" data-lang="spin_btn">Крутити!</button>
-        <button id="unlock-audio-btn" class="secondary-btn" style="display:none;" data-lang="unlock_audio">🔇 Звук</button>
     </div>
 
     <div id="result">
@@ -169,6 +181,14 @@
             <button id="custom-confirm-yes" class="main-btn" data-lang="confirm_yes">Так</button>
             <button id="custom-confirm-no" class="secondary-btn" data-lang="confirm_no">Ні</button>
         </div>
+    </div>
+</div>
+
+<!-- Reminder Banner -->
+<div id="reminder-banner" style="display:none;">
+    <div id="reminder-banner-content">
+        <span id="reminder-banner-text">💪 Час крутити колесо!</span>
+        <button id="reminder-banner-close" class="secondary-btn">✕</button>
     </div>
 </div>
 

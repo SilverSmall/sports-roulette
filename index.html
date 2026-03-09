@@ -18,6 +18,7 @@
     <nav id="main-nav">
         <ul>
             <li><a href="#exercises-section" data-lang="ex_list">Список вправ</a></li>
+            <li><a href="#custom-levels-section" data-lang="custom_levels_title">Мої рівні</a></li>
             <li><a href="#history-section" data-lang="history">Історія</a></li>
             <li><a href="#skins-management-section" data-lang="skins_management">Керування скінами</a></li>
         </ul>
@@ -75,7 +76,7 @@
                 </select>
             </label>
             <label>
-                <button id="unlock-audio-btn" class="secondary-btn" style="display:none;white-space:nowrap;">🔇 Звук</button>
+                <button id="unlock-audio-btn" class="secondary-btn" style="display:none;white-space:nowrap;" data-lang="unlock_audio">🔇 Звук</button>
             </label>
         </div>
     </div>
@@ -121,6 +122,25 @@
     <button class="back-to-wheel-btn" data-lang="back_to_wheel">Назад до колеса</button>
 </section>
 
+<section id="custom-levels-section">
+    <h2 data-lang="custom_levels_title">Мої рівні</h2>
+    <p class="section-description">Створіть власні рівні з потрібною кількістю повторень (макс. 3 рівні).</p>
+    <ul id="custom-levels-list"></ul>
+    <div class="custom-level-form">
+        <input type="text" id="custom-level-name" placeholder="Назва рівня" data-lang-placeholder="custom_level_name" maxlength="20">
+        <div class="custom-level-row">
+            <label><span data-lang="custom_level_min">Мін. повт.</span><input type="number" id="custom-level-min" min="1" max="999" placeholder="5"></label>
+            <label><span data-lang="custom_level_max">Макс. повт.</span><input type="number" id="custom-level-max" min="1" max="999" placeholder="20"></label>
+        </div>
+        <div class="custom-level-row">
+            <label><span data-lang="custom_level_plank_min">Мін. сек.</span><input type="number" id="custom-level-plank-min" min="1" max="600" placeholder="10"></label>
+            <label><span data-lang="custom_level_plank_max">Макс. сек.</span><input type="number" id="custom-level-plank-max" min="1" max="600" placeholder="30"></label>
+        </div>
+        <button id="add-custom-level-btn" class="main-btn" data-lang="add_custom_level">➕ Додати рівень</button>
+    </div>
+    <button class="back-to-wheel-btn" data-lang="back_to_wheel">Назад до колеса</button>
+</section>
+
 <section id="history-section">
     <h2 data-lang="history">Історія</h2>
     <ul id="history"></ul>
@@ -141,7 +161,11 @@
         <button id="skin-apply-url-btn" class="secondary-btn" data-lang="apply_url">Застосувати URL</button>
         <button id="skin-clear-btn" class="danger-btn" data-lang="clear_skin">Очистити</button>
     </div>
-    <!-- COLOR PICKER FOR WHEEL SECTORS -->
+    <div id="saved-skins-container">
+        <h3 data-lang="saved_skins_title">Збережені скіни:</h3>
+        <ul id="saved-skins-list" class="saved-skins-list"></ul>
+    </div>
+    <!-- Color Picker -->
     <div id="wheel-color-settings">
         <h3 data-lang="wheel_colors_title">Кольори секторів:</h3>
         <div class="color-pickers-row">
@@ -153,14 +177,15 @@
         </div>
         <button id="reset-colors-btn" class="secondary-btn" data-lang="reset_colors">Скинути кольори</button>
     </div>
-    <div id="saved-skins-container">
-        <h3 data-lang="saved_skins_title">Збережені скіни:</h3>
-        <ul id="saved-skins-list" class="saved-skins-list">
-            <!-- Saved skins will be rendered here by JavaScript -->
-        </ul>
-    </div>
     <button class="back-to-wheel-btn" data-lang="back_to_wheel">Назад до колеса</button>
 </section>
+
+<div id="reminder-banner" style="display:none;">
+    <div id="reminder-banner-content">
+        <span id="reminder-banner-text">💪 Час крутити колесо!</span>
+        <button id="reminder-banner-close" class="secondary-btn">✕</button>
+    </div>
+</div>
 
 <div id="fullscreen-timer" style="display: none;">
     <div class="timer-content">
@@ -181,14 +206,6 @@
             <button id="custom-confirm-yes" class="main-btn" data-lang="confirm_yes">Так</button>
             <button id="custom-confirm-no" class="secondary-btn" data-lang="confirm_no">Ні</button>
         </div>
-    </div>
-</div>
-
-<!-- Reminder Banner -->
-<div id="reminder-banner" style="display:none;">
-    <div id="reminder-banner-content">
-        <span id="reminder-banner-text">💪 Час крутити колесо!</span>
-        <button id="reminder-banner-close" class="secondary-btn">✕</button>
     </div>
 </div>
 

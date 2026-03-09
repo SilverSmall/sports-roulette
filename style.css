@@ -483,7 +483,63 @@ section h2 {
     gap: 5px;
     margin-top: 5px;
 }
-/* Color picker for wheel sectors */
+/* Custom Levels */
+.custom-level-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 16px;
+}
+.custom-level-form input[type="text"],
+.custom-level-form input[type="number"] {
+    padding: 9px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--input-border);
+    background: var(--main-bg-color);
+    color: var(--text-color);
+    font-size: 0.95em;
+    width: 100%;
+    box-sizing: border-box;
+}
+.custom-level-row {
+    display: flex;
+    gap: 12px;
+}
+.custom-level-row label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    font-size: 0.82em;
+    font-weight: 600;
+    color: var(--text-color-light);
+}
+#custom-levels-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    margin-bottom: 6px;
+}
+.custom-level-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--input-border);
+    gap: 10px;
+}
+.custom-level-item:last-child { border-bottom: none; }
+.custom-level-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.custom-level-info strong { font-size: 1em; }
+.custom-level-info span   { font-size: 0.8em; color: var(--text-color-light); }
+
+/* Color picker */
 #wheel-color-settings {
     margin-top: 20px;
     display: flex;
@@ -491,6 +547,8 @@ section h2 {
     align-items: center;
     gap: 10px;
     width: 100%;
+    border-top: 1px solid var(--input-border);
+    padding-top: 16px;
 }
 #wheel-color-settings h3 { margin: 0; }
 .color-pickers-row {
@@ -518,7 +576,7 @@ section h2 {
     background: none;
 }
 
-/* Confetti canvas */
+/* Confetti */
 #confetti-canvas {
     position: fixed;
     top: 0; left: 0;
@@ -528,9 +586,7 @@ section h2 {
 }
 
 /* Unlock audio button */
-#unlock-audio-btn {
-    animation: pulse-glow 1.5s infinite;
-}
+#unlock-audio-btn { animation: pulse-glow 1.5s infinite; }
 @keyframes pulse-glow {
     0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.5); }
     50%       { box-shadow: 0 0 0 8px rgba(255,215,0,0); }

@@ -10,10 +10,10 @@
     const MAX_WHEEL_SEGMENTS = 16;
 
     const defaultExercises = {
-        legs:       ["Присідання", "Випади", "Присідання-Пліє", "Стрибки", "Випади назад"],
-        arms_chest: ["Віджимання", "Віджимання від лавки", "Планка з переходом на руки", "Віджимання від колін", "Зворотні віджимання"],
-        core:       ["Прес", "Планка", "Велосипед", "Скручування", "Планка з підняттям рук", "Махи ногами"],
-        cardio:     ["Бурпі", "Стрибки на скакалці", "Стрибки з зіркою", "Біг на місці"]
+        legs:       ["Присідання", "Випади", "Стрибки вгору", "Присідання пліє", "Ходьба випадами"],
+        arms_chest: ["Віджимання", "Відж. від колін", "Зворотні відж.", "Планка на руках", "Відж. з хлопком"],
+        core:       ["Прес", "Планка", "Велосипед", "Скручування", "Підіймання ніг"],
+        cardio:     ["Бурпі", "Стрибки зірка", "Біг на місці", "Скакалка"]
     };
 
     const superExercise = "Супер-вправа (30 сек макс. темп!)";
@@ -65,7 +65,8 @@
             beep_mute: "🔔 Біп: Увімк.",
             beep_unmute: "🔇 Біп: Вимк.",
             beep_mute_title: "Вимкнути звук біпу",
-            beep_unmute_title: "Увімкнути звук біпу"
+            beep_unmute_title: "Увімкнути звук біпу",
+            no_saved_skins: "Немає збережених скінів."
         },
         en: {
             level_label: "Level:",
@@ -101,7 +102,8 @@
             beep_mute: "🔔 Beep: On",
             beep_unmute: "🔇 Beep: Off",
             beep_mute_title: "Mute beep sound",
-            beep_unmute_title: "Unmute beep sound"
+            beep_unmute_title: "Unmute beep sound",
+            no_saved_skins: "No saved skins."
         }
     };
 
@@ -378,7 +380,8 @@
         if (!savedSkinsList) return;
         savedSkinsList.innerHTML = '';
         if (!savedSkins.length) {
-            savedSkinsList.innerHTML = `<li style="text-align:center;width:100%;color:var(--text-color-light);">Немає збережених скінів.</li>`;
+            const lang = langStrings[currentLang];
+            savedSkinsList.innerHTML = `<li style="text-align:center;width:100%;color:var(--text-color-light);">${lang.no_saved_skins || 'Немає збережених скінів.'}</li>`;
             return;
         }
         savedSkins.forEach(url => {
@@ -421,23 +424,20 @@
 
     function loadExercises() {
         try {
-            userExercises = JSON.parse(JSON.stringify(defaultExercises));
-            const saved   = JSON.parse(localStorage.getItem('exercises'));
-            if (saved) {
+            const saved = JSON.parse(localStorage.getItem('exercises'));
+            if (saved && typeof saved === 'object' && Object.keys(saved).length > 0) {
+                // Use saved exercises directly (they already contain user's full list)
+                userExercises = {};
                 for (const cat in saved) {
                     if (!saved.hasOwnProperty(cat) || !Array.isArray(saved[cat])) continue;
-                    if (userExercises.hasOwnProperty(cat)) {
-                        const existing = new Set(userExercises[cat]);
-                        saved[cat].forEach(ex => {
-                            if (typeof ex === 'string' && ex.trim() && !existing.has(ex)) {
-                                userExercises[cat].push(ex);
-                                existing.add(ex);
-                            }
-                        });
-                    } else {
-                        userExercises[cat] = saved[cat].filter(ex => typeof ex === 'string' && ex.trim());
-                    }
+                    userExercises[cat] = saved[cat].filter(ex => typeof ex === 'string' && ex.trim());
                 }
+                // Ensure all categories exist
+                for (const cat in defaultExercises) {
+                    if (!userExercises[cat]) userExercises[cat] = [];
+                }
+            } else {
+                userExercises = JSON.parse(JSON.stringify(defaultExercises));
             }
             const skin = localStorage.getItem('customSkinURL');
             if (skin) { customSkinURL = skin; applyCustomSkin(); }
@@ -538,8 +538,7 @@
 
     function displayResult(exercise) {
         const level      = levelSelect ? levelSelect.value : 'medium';
-        const isTimeBased = exercise.includes("Планка") || exercise.includes("Plank") ||
-                            exercise.includes("сек")    || exercise.includes("sec");
+        const isTimeBased = /планк|plank|сек|sec/i.test(exercise);
         let reps;
         if (isTimeBased) {
             const { plankMin, plankMax } = levels[level];

@@ -77,6 +77,7 @@
 
     <div class="action-buttons">
         <button id="spin-btn" class="main-btn" data-lang="spin_btn">Крутити!</button>
+        <button id="unlock-audio-btn" class="secondary-btn" style="display:none;" data-lang="unlock_audio">🔇 Звук</button>
     </div>
 
     <div id="result">
@@ -101,6 +102,9 @@
     </div>
     <div class="list-management-btns">
         <button id="resetExBtn" class="secondary-btn" data-lang="reset_ex">Скинути до стандартних</button>
+        <button id="exportExBtn" class="secondary-btn" data-lang="export_ex">⬇ Експорт JSON</button>
+        <button id="importExBtn" class="secondary-btn" data-lang="import_ex">⬆ Імпорт JSON</button>
+        <input type="file" id="import-ex-input" accept=".json" style="display:none;">
     </div>
     <button class="back-to-wheel-btn" data-lang="back_to_wheel">Назад до колеса</button>
 </section>
@@ -124,6 +128,18 @@
         <input type="url" id="skin-url-input" placeholder="Або вставте посилання на GIF/фото" data-lang-placeholder="paste_url_placeholder">
         <button id="skin-apply-url-btn" class="secondary-btn" data-lang="apply_url">Застосувати URL</button>
         <button id="skin-clear-btn" class="danger-btn" data-lang="clear_skin">Очистити</button>
+    </div>
+    <!-- COLOR PICKER FOR WHEEL SECTORS -->
+    <div id="wheel-color-settings">
+        <h3 data-lang="wheel_colors_title">Кольори секторів:</h3>
+        <div class="color-pickers-row">
+            <label><span>1</span><input type="color" id="color-1" value="#ff6347"></label>
+            <label><span>2</span><input type="color" id="color-2" value="#4682b4"></label>
+            <label><span>3</span><input type="color" id="color-3" value="#32cd32"></label>
+            <label><span>4</span><input type="color" id="color-4" value="#ffa500"></label>
+            <label><span>5</span><input type="color" id="color-5" value="#9370db"></label>
+        </div>
+        <button id="reset-colors-btn" class="secondary-btn" data-lang="reset_colors">Скинути кольори</button>
     </div>
     <div id="saved-skins-container">
         <h3 data-lang="saved_skins_title">Збережені скіни:</h3>

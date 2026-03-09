@@ -10,10 +10,10 @@
     const MAX_WHEEL_SEGMENTS = 16;
 
     const defaultExercises = {
-        legs:       ["Присідання", "Випади", "Стрибки вгору", "Присідання пліє", "Ходьба випадами"],
-        arms_chest: ["Віджимання", "Відж. від колін", "Зворотні відж.", "Планка на руках", "Відж. з хлопком"],
-        core:       ["Прес", "Планка", "Велосипед", "Скручування", "Підіймання ніг"],
-        cardio:     ["Бурпі", "Стрибки зірка", "Біг на місці", "Скакалка"]
+        legs:       ["Присідання", "Випади", "Присідання-Пліє", "Стрибки", "Випади назад"],
+        arms_chest: ["Віджимання", "Віджимання від лавки", "Планка з переходом на руки", "Віджимання від колін", "Зворотні віджимання"],
+        core:       ["Прес", "Планка", "Велосипед", "Скручування", "Планка з підняттям рук", "Махи ногами"],
+        cardio:     ["Бурпі", "Стрибки на скакалці", "Стрибки з зіркою", "Біг на місці"]
     };
 
     const superExercise = "Супер-вправа (30 сек макс. темп!)";
@@ -66,7 +66,15 @@
             beep_unmute: "🔇 Біп: Вимк.",
             beep_mute_title: "Вимкнути звук біпу",
             beep_unmute_title: "Увімкнути звук біпу",
-            no_saved_skins: "Немає збережених скінів."
+            no_saved_skins: "Немає збережених скінів.",
+            unlock_audio: "🔇 Звук",
+            unlock_audio_done: "🔔 Звук увімк.",
+            export_ex: "⬇ Експорт JSON",
+            import_ex: "⬆ Імпорт JSON",
+            import_success: "Вправи успішно імпортовані!",
+            import_error: "Помилка імпорту файлу!",
+            wheel_colors_title: "Кольори секторів:",
+            reset_colors: "Скинути кольори"
         },
         en: {
             level_label: "Level:",
@@ -103,7 +111,15 @@
             beep_unmute: "🔇 Beep: Off",
             beep_mute_title: "Mute beep sound",
             beep_unmute_title: "Unmute beep sound",
-            no_saved_skins: "No saved skins."
+            no_saved_skins: "No saved skins.",
+            unlock_audio: "🔇 Sound",
+            unlock_audio_done: "🔔 Sound on!",
+            export_ex: "⬇ Export JSON",
+            import_ex: "⬆ Import JSON",
+            import_success: "Exercises imported successfully!",
+            import_error: "Error importing file!",
+            wheel_colors_title: "Sector colors:",
+            reset_colors: "Reset colors"
         }
     };
 
@@ -179,6 +195,12 @@
     const savedSkinsList        = document.getElementById('saved-skins-list');
     const settingsAndControls   = document.querySelector('.settings-and-controls');
     const actionButtons         = document.querySelector('.action-buttons');
+    const unlockAudioBtn        = document.getElementById('unlock-audio-btn');
+    const exportExBtn           = document.getElementById('exportExBtn');
+    const importExBtn           = document.getElementById('importExBtn');
+    const importExInput         = document.getElementById('import-ex-input');
+    const resetColorsBtn        = document.getElementById('reset-colors-btn');
+    const colorInputs           = [1,2,3,4,5].map(i => document.getElementById(`color-${i}`));
 
     // --------- State -----------------
 
@@ -228,6 +250,147 @@
             const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
             return v || fallback;
         } catch(e) { return fallback; }
+    }
+
+    // --------- Wheel Colors -----------------
+
+    const defaultColors = ['#ff6347','#4682b4','#32cd32','#ffa500','#9370db'];
+
+    function loadWheelColors() {
+        const saved = JSON.parse(localStorage.getItem('wheelColors') || 'null');
+        const colors = saved || defaultColors;
+        colors.forEach((c, i) => {
+            document.documentElement.style.setProperty(`--wheel-sector-${i+1}`, c);
+            if (colorInputs[i]) colorInputs[i].value = c;
+        });
+    }
+
+    function saveWheelColors() {
+        const colors = colorInputs.map(inp => inp ? inp.value : defaultColors[0]);
+        localStorage.setItem('wheelColors', JSON.stringify(colors));
+        colors.forEach((c, i) => document.documentElement.style.setProperty(`--wheel-sector-${i+1}`, c));
+        drawWheel(getExercisesForSpin());
+    }
+
+    function resetWheelColors() {
+        localStorage.removeItem('wheelColors');
+        defaultColors.forEach((c, i) => {
+            document.documentElement.style.setProperty(`--wheel-sector-${i+1}`, c);
+            if (colorInputs[i]) colorInputs[i].value = c;
+        });
+        drawWheel(getExercisesForSpin());
+    }
+
+    // --------- Audio Unlock -----------------
+
+    let audioUnlocked = false;
+
+    function tryUnlockAudio() {
+        if (audioUnlocked) return;
+        Promise.all([
+            audioSpin.play().then(() => { audioSpin.pause(); audioSpin.currentTime = 0; }),
+            audioBeep.play().then(() => { audioBeep.pause(); audioBeep.currentTime = 0; })
+        ]).then(() => {
+            audioUnlocked = true;
+            if (unlockAudioBtn) {
+                unlockAudioBtn.style.display = 'none';
+                unlockAudioBtn.style.animation = 'none';
+            }
+        }).catch(() => {
+            if (unlockAudioBtn) unlockAudioBtn.style.display = 'inline-flex';
+        });
+    }
+
+    function checkAudioOnLoad() {
+        // Try silently; if blocked, show the button
+        const testPlay = audioBeep.play();
+        if (testPlay !== undefined) {
+            testPlay.then(() => {
+                audioBeep.pause(); audioBeep.currentTime = 0;
+                audioUnlocked = true;
+            }).catch(() => {
+                if (unlockAudioBtn) unlockAudioBtn.style.display = 'inline-flex';
+            });
+        }
+    }
+
+    // --------- Confetti -----------------
+
+    function launchConfetti() {
+        let canvas = document.getElementById('confetti-canvas');
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.id = 'confetti-canvas';
+            document.body.appendChild(canvas);
+        }
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const ctx2    = canvas.getContext('2d');
+        const pieces  = Array.from({ length: 120 }, () => ({
+            x:     Math.random() * canvas.width,
+            y:     Math.random() * canvas.height - canvas.height,
+            w:     6 + Math.random() * 8,
+            h:     10 + Math.random() * 8,
+            color: `hsl(${Math.random()*360},90%,55%)`,
+            rot:   Math.random() * 360,
+            vx:    (Math.random() - 0.5) * 3,
+            vy:    3 + Math.random() * 4,
+            vr:    (Math.random() - 0.5) * 6
+        }));
+        let frame = 0;
+        function draw() {
+            ctx2.clearRect(0, 0, canvas.width, canvas.height);
+            pieces.forEach(p => {
+                ctx2.save();
+                ctx2.translate(p.x + p.w/2, p.y + p.h/2);
+                ctx2.rotate(p.rot * Math.PI / 180);
+                ctx2.fillStyle = p.color;
+                ctx2.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+                ctx2.restore();
+                p.x  += p.vx;
+                p.y  += p.vy;
+                p.rot += p.vr;
+                p.vy += 0.07;
+            });
+            frame++;
+            if (frame < 160) requestAnimationFrame(draw);
+            else { ctx2.clearRect(0, 0, canvas.width, canvas.height); }
+        }
+        draw();
+    }
+
+    // --------- Export / Import Exercises -----------------
+
+    function exportExercises() {
+        const data = JSON.stringify(userExercises, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = 'exercises.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importExercises(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (typeof imported !== 'object' || Array.isArray(imported)) throw new Error();
+                for (const cat in imported) {
+                    if (!Array.isArray(imported[cat])) throw new Error();
+                }
+                userExercises = imported;
+                saveExercises();
+                renderExercises();
+                drawWheel(getExercisesForSpin());
+                showCustomConfirm(langStrings[currentLang].import_success, () => {});
+            } catch(err) {
+                showCustomConfirm(langStrings[currentLang].import_error, () => {});
+            }
+        };
+        reader.readAsText(file);
     }
 
     // --------- Text wrapping for wheel -----------------
@@ -380,8 +543,7 @@
         if (!savedSkinsList) return;
         savedSkinsList.innerHTML = '';
         if (!savedSkins.length) {
-            const lang = langStrings[currentLang];
-            savedSkinsList.innerHTML = `<li style="text-align:center;width:100%;color:var(--text-color-light);">${lang.no_saved_skins || 'Немає збережених скінів.'}</li>`;
+            savedSkinsList.innerHTML = `<li style="text-align:center;width:100%;color:var(--text-color-light);">Немає збережених скінів.</li>`;
             return;
         }
         savedSkins.forEach(url => {
@@ -424,20 +586,23 @@
 
     function loadExercises() {
         try {
-            const saved = JSON.parse(localStorage.getItem('exercises'));
-            if (saved && typeof saved === 'object' && Object.keys(saved).length > 0) {
-                // Use saved exercises directly (they already contain user's full list)
-                userExercises = {};
+            userExercises = JSON.parse(JSON.stringify(defaultExercises));
+            const saved   = JSON.parse(localStorage.getItem('exercises'));
+            if (saved) {
                 for (const cat in saved) {
                     if (!saved.hasOwnProperty(cat) || !Array.isArray(saved[cat])) continue;
-                    userExercises[cat] = saved[cat].filter(ex => typeof ex === 'string' && ex.trim());
+                    if (userExercises.hasOwnProperty(cat)) {
+                        const existing = new Set(userExercises[cat]);
+                        saved[cat].forEach(ex => {
+                            if (typeof ex === 'string' && ex.trim() && !existing.has(ex)) {
+                                userExercises[cat].push(ex);
+                                existing.add(ex);
+                            }
+                        });
+                    } else {
+                        userExercises[cat] = saved[cat].filter(ex => typeof ex === 'string' && ex.trim());
+                    }
                 }
-                // Ensure all categories exist
-                for (const cat in defaultExercises) {
-                    if (!userExercises[cat]) userExercises[cat] = [];
-                }
-            } else {
-                userExercises = JSON.parse(JSON.stringify(defaultExercises));
             }
             const skin = localStorage.getItem('customSkinURL');
             if (skin) { customSkinURL = skin; applyCustomSkin(); }
@@ -538,7 +703,8 @@
 
     function displayResult(exercise) {
         const level      = levelSelect ? levelSelect.value : 'medium';
-        const isTimeBased = /планк|plank|сек|sec/i.test(exercise);
+        const isTimeBased = exercise.includes("Планка") || exercise.includes("Plank") ||
+                            exercise.includes("сек")    || exercise.includes("sec");
         let reps;
         if (isTimeBased) {
             const { plankMin, plankMax } = levels[level];
@@ -551,6 +717,8 @@
 
         if (resultText) resultText.textContent = exercise;
         if (repsText)   repsText.textContent   = reps;
+
+        launchConfetti();
 
         const now     = new Date();
         const dateStr = `${now.toLocaleDateString(currentLang === 'uk' ? 'uk-UA' : 'en-GB')} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
@@ -765,6 +933,27 @@
     if (themeSelect)     themeSelect.addEventListener('change',    e  => setTheme(e.target.value));
     if (categorySelect)  categorySelect.addEventListener('change', () => drawWheel(getExercisesForSpin()));
 
+    // Audio unlock
+    if (unlockAudioBtn) unlockAudioBtn.addEventListener('click', () => {
+        tryUnlockAudio();
+        unlockAudioBtn.textContent = langStrings[currentLang].unlock_audio_done || '🔔 Звук увімк.';
+        setTimeout(() => { unlockAudioBtn.style.display = 'none'; }, 1500);
+    });
+
+    // Export / Import exercises
+    if (exportExBtn)   exportExBtn.addEventListener('click', exportExercises);
+    if (importExBtn)   importExBtn.addEventListener('click', () => importExInput && importExInput.click());
+    if (importExInput) importExInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) { importExercises(file); importExInput.value = ''; }
+    });
+
+    // Color pickers
+    colorInputs.forEach((inp, i) => {
+        if (inp) inp.addEventListener('input', saveWheelColors);
+    });
+    if (resetColorsBtn) resetColorsBtn.addEventListener('click', resetWheelColors);
+
     if (skinUploadBtn)   skinUploadBtn.addEventListener('click', () => skinInput && skinInput.click());
 
     const beepToggleBtn = document.getElementById('beep-toggle-btn');
@@ -861,6 +1050,8 @@
         renderHistory();
         setLang(currentLang);
         setTheme(currentTheme);
+        loadWheelColors();
+        checkAudioOnLoad();
 
         if (langSelect)  langSelect.value  = currentLang;
         if (themeSelect) themeSelect.value = currentTheme;
